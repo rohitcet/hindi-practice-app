@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hindi PSLE Practice</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--saffron:#FF6B00;--saffron-light:#FFF0E5;--green:#138808;--green-light:#E6F5E6;--green-mid:#B3DDB3;--navy:#000080;--navy-light:#E6E6FF;--bg:#FAFAF8;--card:#FFFFFF;--text:#1A1A2E;--muted:#6B6B80;--border:#E8E8F0;--shadow:0 2px 12px rgba(0,0,0,0.07);--radius:12px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+.hindi{font-family:'Noto Sans Devanagari',sans-serif;}
+header{background:var(--navy);color:white;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,128,0.2);}
+.header-inner{max-width:900px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:12px;}
+.flag-stripe{display:flex;flex-direction:column;gap:2px;width:22px;flex-shrink:0;}
+.flag-stripe span{display:block;height:4px;border-radius:1px;}
+.s1{background:#FF9933;}.s2{background:white;}.s3{background:#138808;}
+.header-title{flex:1;}
+.header-title h1{font-size:16px;font-weight:600;color:white;}
+.header-title p{font-size:11px;color:rgba(255,255,255,0.5);margin-top:1px;}
+.btn-home{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);color:white;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.12s;flex-shrink:0;}
+.btn-home:hover{background:rgba(255,255,255,0.22);}
+.score-pill{display:flex;gap:10px;align-items:center;}
+.score-item{text-align:center;}
+.score-item .num{font-size:18px;font-weight:600;line-height:1;}
+.score-item .lbl{font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.5px;margin-top:1px;}
+.s-correct .num{color:#4ade80;}.s-wrong .num{color:#f87171;}.s-total .num{color:rgba(255,255,255,0.7);}
+.score-div{width:1px;height:24px;background:rgba(255,255,255,0.15);}
+main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
+.home-hero{background:linear-gradient(135deg,var(--navy) 0%,#1a1a6e 100%);border-radius:20px;padding:36px 32px;color:white;text-align:center;margin-bottom:28px;position:relative;overflow:hidden;}
+.home-hero::before{content:'OM';position:absolute;font-size:120px;opacity:0.04;top:-10px;right:10px;line-height:1;}
+.home-hero h2{font-size:26px;font-weight:600;margin-bottom:6px;}
+.home-hero p{color:rgba(255,255,255,0.55);font-size:14px;margin-bottom:22px;}
+.hero-stats{display:flex;gap:20px;justify-content:center;}
+.hero-stat .n{font-size:24px;font-weight:600;color:#FFD166;}
+.hero-stat .l{font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;}
+.hero-stat-div{width:1px;background:rgba(255,255,255,0.1);}
+.section-title{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px;}
+.mode-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:28px;}
+.mode-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:all 0.15s;position:relative;text-align:left;}
+.mode-card:hover{border-color:var(--navy);transform:translateY(-2px);box-shadow:var(--shadow);}
+.mode-card.selected{border-color:var(--saffron);background:var(--saffron-light);}
+.mode-card .icon{font-size:22px;margin-bottom:7px;}
+.mode-card h3{font-size:13px;font-weight:600;margin-bottom:3px;}
+.mode-card p{font-size:11px;color:var(--muted);line-height:1.5;}
+.mode-card .check{position:absolute;top:10px;right:10px;width:18px;height:18px;border-radius:50%;background:var(--saffron);color:white;font-size:10px;display:none;align-items:center;justify-content:center;}
+.mode-card.selected .check{display:flex;}
+.year-grid{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:28px;}
+.year-btn{padding:6px 13px;border-radius:999px;border:1.5px solid var(--border);background:var(--card);font-size:12px;font-weight:500;cursor:pointer;transition:all 0.12s;color:var(--text);}
+.year-btn:hover{border-color:var(--navy);}
+.year-btn.active{background:var(--navy);color:white;border-color:var(--navy);}
+.btn-start{display:block;width:100%;max-width:280px;margin:0 auto;padding:13px 28px;background:var(--saffron);color:white;border:none;border-radius:var(--radius);font-size:15px;font-weight:600;cursor:pointer;transition:all 0.15s;}
+.btn-start:hover{background:#e05a00;transform:translateY(-1px);box-shadow:0 4px 16px rgba(255,107,0,0.3);}
+.progress-wrap{margin-bottom:18px;}
+.progress-meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px;}
+.progress-bar{height:5px;background:var(--border);border-radius:999px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--saffron),#FF9933);border-radius:999px;transition:width 0.4s ease;}
+.q-meta{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+.tag{padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:0.4px;text-transform:uppercase;}
+.tag-year{background:var(--navy-light);color:var(--navy);}
+.tag-section{background:var(--saffron-light);color:var(--saffron);}
+.passage-card{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--saffron);border-radius:var(--radius);padding:16px 18px;margin-bottom:16px;font-size:15px;line-height:1.9;}
+.blank-hl{background:var(--saffron-light);color:var(--saffron);padding:1px 5px;border-radius:4px;font-weight:600;}
+.q-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;box-shadow:var(--shadow);}
+.q-number{font-size:11px;color:var(--muted);font-weight:500;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;}
+.q-text{font-size:16px;font-weight:500;line-height:1.6;margin-bottom:16px;}
+.options{display:flex;flex-direction:column;gap:8px;}
+.opt{display:flex;align-items:center;gap:12px;padding:12px 15px;border:1.5px solid var(--border);border-radius:9px;cursor:pointer;background:var(--card);transition:all 0.12s;text-align:left;width:100%;}
+.opt:hover:not(:disabled){border-color:var(--navy);background:var(--navy-light);}
+.opt-num{width:24px;height:24px;border-radius:50%;background:var(--bg);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;color:var(--muted);transition:all 0.12s;}
+.opt-text{font-size:14px;line-height:1.5;}
+.opt.correct{border-color:var(--green);background:var(--green-light);}
+.opt.correct .opt-num{background:var(--green);border-color:var(--green);color:white;}
+.opt.wrong{border-color:#ef4444;background:#FEF2F2;}
+.opt.wrong .opt-num{background:#ef4444;border-color:#ef4444;color:white;}
+.opt:disabled{cursor:default;}
+.feedback-box{padding:11px 15px;border-radius:9px;font-size:14px;font-weight:500;margin-top:12px;display:none;align-items:center;gap:8px;line-height:1.5;}
+.feedback-box.show{display:flex;}
+.feedback-box.correct{background:var(--green-light);color:var(--green);border:1px solid var(--green-mid);}
+.feedback-box.wrong{background:#FEF2F2;color:#b91c1c;border:1px solid #FECACA;}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+.btn-primary{padding:11px 22px;border-radius:9px;background:var(--navy);color:white;border:none;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.12s;}
+.btn-primary:hover{background:#000060;}
+.btn-secondary{padding:11px 16px;border-radius:9px;background:transparent;color:var(--muted);border:1.5px solid var(--border);font-size:14px;cursor:pointer;transition:all 0.12s;}
+.btn-secondary:hover{background:var(--bg);color:var(--text);}
+.btn-secondary:disabled{opacity:0.3;cursor:default;}
+.done-hero{background:var(--card);border-radius:20px;padding:40px 32px;text-align:center;border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:20px;}
+.done-emoji{font-size:50px;margin-bottom:12px;}
+.done-hero h2{font-size:24px;font-weight:600;margin-bottom:6px;}
+.done-hero p{color:var(--muted);font-size:14px;margin-bottom:22px;}
+.score-display{font-size:58px;font-weight:700;color:var(--navy);line-height:1;margin:10px 0 4px;}
+.score-sub{font-size:13px;color:var(--muted);margin-bottom:22px;}
+.done-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px;}
+.done-stat-card{background:var(--bg);border-radius:10px;padding:14px;text-align:center;}
+.done-stat-card .n{font-size:26px;font-weight:600;}
+.done-stat-card .l{font-size:11px;color:var(--muted);margin-top:2px;}
+.done-stat-card.c .n{color:var(--green);}.done-stat-card.w .n{color:#ef4444;}.done-stat-card.sk .n{color:var(--muted);}
+.done-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--text);color:white;padding:9px 18px;border-radius:999px;font-size:13px;font-weight:500;transition:transform 0.3s;z-index:999;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+@media(max-width:600px){main{padding:14px 12px 60px;}.home-hero{padding:24px 16px;}.done-hero{padding:28px 16px;}}
+
+/* LOGIN SCREEN */
+#loginScreen{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 60px);}
+.login-card{background:var(--card);border-radius:20px;padding:48px 40px;text-align:center;border:1px solid var(--border);box-shadow:var(--shadow);max-width:380px;width:100%;}
+.login-logo{font-size:48px;margin-bottom:16px;}
+.login-card h2{font-size:22px;font-weight:600;margin-bottom:8px;}
+.login-card p{color:var(--muted);font-size:14px;margin-bottom:28px;line-height:1.6;}
+#googleBtn{margin:0 auto 16px;min-width:220px;}
+.login-divider{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--muted);font-size:12px;}
+.login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+.admin-link{font-size:13px;color:var(--navy);cursor:pointer;text-decoration:underline;background:none;border:none;font-family:inherit;}
+.admin-link:hover{color:var(--saffron);}
+/* USER BAR */
+.user-bar{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.user-avatar{width:30px;height:30px;border-radius:50%;border:2px solid rgba(255,255,255,0.3);object-fit:cover;}
+.user-name{font-size:13px;color:rgba(255,255,255,0.85);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.btn-logout{padding:5px 10px;border-radius:6px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:white;font-size:11px;cursor:pointer;transition:all 0.12s;}
+.btn-logout:hover{background:rgba(255,255,255,0.2);}
+/* ADMIN MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal-box{background:var(--card);border-radius:16px;padding:32px;max-width:420px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,0.2);}
+.modal-box h3{font-size:18px;font-weight:600;margin-bottom:6px;}
+.modal-box p{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6;}
+.modal-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;font-size:14px;font-family:inherit;color:var(--text);background:var(--bg);margin-bottom:12px;outline:none;}
+.modal-input:focus{border-color:var(--navy);}
+.modal-err{color:#b91c1c;font-size:13px;margin-bottom:12px;display:none;}
+.modal-btns{display:flex;gap:10px;}
+/* ADMIN DASHBOARD */
+#adminScreen{display:none;}
+.admin-header-bar{background:linear-gradient(135deg,#1a1a6e,var(--navy));border-radius:16px;padding:24px 28px;color:white;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.admin-header-bar h2{font-size:20px;font-weight:600;}
+.admin-header-bar p{font-size:13px;color:rgba(255,255,255,0.6);margin-top:2px;}
+.admin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px;}
+.admin-stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;box-shadow:var(--shadow);}
+.admin-stat .n{font-size:32px;font-weight:700;color:var(--navy);}
+.admin-stat .l{font-size:12px;color:var(--muted);margin-top:3px;}
+.admin-table-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);}
+.admin-table-title{padding:16px 20px;font-size:14px;font-weight:600;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.admin-table{width:100%;border-collapse:collapse;font-size:13px;}
+.admin-table th{padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;background:var(--bg);border-bottom:1px solid var(--border);}
+.admin-table td{padding:12px 16px;border-bottom:1px solid var(--border);color:var(--text);}
+.admin-table tr:last-child td{border-bottom:none;}
+.admin-table tr:hover td{background:var(--bg);}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;}
+.badge-green{background:var(--green-light);color:var(--green);}
+.badge-orange{background:var(--saffron-light);color:var(--saffron);}
+.setup-card{background:#FFF8E7;border:1px solid #FFD166;border-radius:12px;padding:20px;margin-bottom:24px;}
+.setup-card h4{font-size:14px;font-weight:600;color:#92400E;margin-bottom:8px;}
+.setup-card ol{padding-left:20px;font-size:13px;color:#78350F;line-height:2;}
+.setup-card code{background:#FDE68A;padding:1px 6px;border-radius:4px;font-family:monospace;font-size:12px;}
+
+/* ORAL PRACTICE MODE */
+.oral-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:28px;}
+.oral-card{background:var(--card);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:all 0.15s;box-shadow:var(--shadow);}
+.oral-card:hover{transform:translateY(-3px);border-color:var(--saffron);box-shadow:0 6px 24px rgba(255,107,0,0.15);}
+.oral-card-img{background:linear-gradient(135deg,#1a1a6e,#3a3a9e);padding:28px 20px;text-align:center;position:relative;min-height:140px;display:flex;align-items:center;justify-content:center;flex-direction:column;}
+.oral-card-img .scene-icon{font-size:48px;margin-bottom:8px;}
+.oral-card-img .year-tag{position:absolute;top:10px;right:10px;background:rgba(255,255,255,0.2);color:white;font-size:10px;font-weight:600;padding:2px 8px;border-radius:999px;}
+.oral-card-body{padding:14px 16px;}
+.oral-card-body h4{font-size:13px;font-weight:600;margin-bottom:4px;color:var(--text);}
+.oral-card-body p{font-size:12px;color:var(--muted);line-height:1.5;}
+.oral-card-body .kw-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;}
+.kw-chip{font-size:10px;padding:2px 7px;background:var(--saffron-light);color:var(--saffron);border-radius:999px;font-family:'Noto Sans Devanagari',sans-serif;}
+
+/* ORAL PRACTICE SCREEN */
+#oralScreen{display:none;}
+.oral-practice-wrap{max-width:700px;margin:0 auto;}
+.oral-scene-card{background:var(--card);border-radius:16px;overflow:hidden;margin-bottom:20px;box-shadow:var(--shadow);border:1px solid var(--border);}
+.oral-scene-header{background:linear-gradient(135deg,#1a1a6e,#3a3a9e);padding:28px 28px 24px;color:white;}
+.oral-scene-header .scene-year{font-size:11px;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;}
+.oral-scene-header h3{font-size:17px;font-weight:500;line-height:1.6;margin-bottom:14px;}
+.oral-scene-header .scene-big-icon{font-size:56px;margin-bottom:10px;}
+.kw-section{padding:16px 20px;border-bottom:1px solid var(--border);}
+.kw-section h5{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px;}
+.kw-list{display:flex;flex-wrap:wrap;gap:6px;}
+.kw-tag{padding:4px 10px;background:var(--saffron-light);color:var(--saffron);border-radius:999px;font-size:13px;font-family:'Noto Sans Devanagari',sans-serif;}
+.oral-tips{padding:14px 20px;background:var(--navy-light);}
+.oral-tips p{font-size:12px;color:var(--navy);line-height:1.7;}
+
+/* RECORDER */
+.recorder-card{background:var(--card);border-radius:16px;padding:24px;margin-bottom:20px;box-shadow:var(--shadow);border:1px solid var(--border);}
+.recorder-card h4{font-size:15px;font-weight:600;margin-bottom:6px;}
+.recorder-card p{font-size:13px;color:var(--muted);margin-bottom:18px;}
+.record-btn{width:72px;height:72px;border-radius:50%;border:none;cursor:pointer;font-size:28px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;transition:all 0.15s;box-shadow:0 4px 16px rgba(0,0,0,0.15);}
+.record-btn.idle{background:var(--saffron);}
+.record-btn.recording{background:#ef4444;animation:pulse 1s infinite;}
+.record-btn.done{background:var(--green);}
+@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
+.record-status{text-align:center;font-size:13px;color:var(--muted);margin-bottom:16px;min-height:20px;}
+.record-timer{text-align:center;font-size:28px;font-weight:600;color:var(--text);margin-bottom:16px;font-variant-numeric:tabular-nums;}
+.audio-player{width:100%;margin-top:10px;display:none;}
+.btn-analyse{display:block;width:100%;padding:13px;border-radius:10px;background:linear-gradient(135deg,var(--navy),#3a3a9e);color:white;border:none;font-size:15px;font-weight:600;cursor:pointer;margin-top:14px;transition:all 0.15s;}
+.btn-analyse:hover{opacity:0.9;transform:translateY(-1px);}
+.btn-analyse:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+
+/* AI FEEDBACK */
+.feedback-card{background:var(--card);border-radius:16px;padding:24px;margin-bottom:20px;box-shadow:var(--shadow);border:1px solid var(--border);display:none;}
+.feedback-card.show{display:block;}
+.feedback-loading{text-align:center;padding:24px;color:var(--muted);}
+.feedback-loading .spin{display:inline-block;width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--saffron);border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:12px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.feedback-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.feedback-score{font-size:36px;font-weight:700;color:var(--navy);}
+.feedback-grade{font-size:13px;color:var(--muted);}
+.feedback-section{margin-bottom:14px;}
+.feedback-section h5{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;}
+.feedback-section p{font-size:14px;line-height:1.7;color:var(--text);}
+.strength-tag{display:inline-block;padding:3px 10px;background:var(--green-light);color:var(--green);border-radius:999px;font-size:12px;margin:2px;}
+.improve-tag{display:inline-block;padding:3px 10px;background:var(--saffron-light);color:var(--saffron);border-radius:999px;font-size:12px;margin:2px;}
+.score-bar{height:8px;background:var(--border);border-radius:999px;overflow:hidden;margin:4px 0 10px;}
+.score-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--saffron),var(--green));transition:width 0.8s ease;}
+.oral-nav-row{display:flex;gap:10px;flex-wrap:wrap;}
+
+</style>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <div class="flag-stripe"><span class="s1"></span><span class="s2"></span><span class="s3"></span></div>
+    <div class="header-title">
+      <h1>&#2361;&#2367;&#2306;&#2342;&#2368; &#2309;&#2349;&#2381;&#2351;&#2366;&#2360; &nbsp;&#183;&nbsp; Hindi Practice</h1>
+      <p>PSLE Mock Papers 2012&#8211;2024</p>
+    </div>
+    <button class="btn-home" onclick="goHome()" id="homeBtn" style="display:none">&#8962; Home</button>
+    <div class="score-pill" id="headerScore" style="display:none">
+      <div class="score-item s-correct"><div class="num" id="hCorrect">0</div><div class="lbl">Right</div></div>
+      <div class="score-div"></div>
+      <div class="score-item s-wrong"><div class="num" id="hWrong">0</div><div class="lbl">Wrong</div></div>
+      <div class="score-div"></div>
+      <div class="score-item s-total"><div class="num" id="hTotal">0</div><div class="lbl">Done</div></div>
+    </div>
+
+    <div class="user-bar" id="userBar" style="display:none">
+      <img id="userAvatar" class="user-avatar" src="" alt="">
+      <span id="userName" class="user-name"></span>
+      <button class="btn-logout" onclick="signOut()">Sign out</button>
+    </div>
+  </div>
+</header>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen" style="display:none">
+  <div class="login-card">
+    <div class="login-logo">&#127981;</div>
+    <h2>&#2361;&#2367;&#2306;&#2342;&#2368; &#2309;&#2349;&#2381;&#2351;&#2366;&#2360;</h2>
+    <p>Sign in to track your progress and access all PSLE Hindi practice papers.</p>
+    <div id="googleBtn"></div>
+    <div class="login-divider">or</div>
+    <button class="admin-link" onclick="showAdminModal()">Admin login &#8594;</button>
+  </div>
+</div>
+
+<!-- ADMIN LOGIN MODAL -->
+<div class="modal-overlay" id="adminModal" style="display:none" onclick="if(event.target===this)closeAdminModal()">
+  <div class="modal-box">
+    <h3>&#128272; Admin Login</h3>
+    <p>Enter the admin password to access the dashboard.</p>
+    <input class="modal-input" type="password" id="adminPwInput" placeholder="Password" onkeydown="if(event.key==='Enter')checkAdmin()">
+    <div class="modal-err" id="adminErr">Incorrect password. Please try again.</div>
+    <div class="modal-btns">
+      <button class="btn-primary" onclick="checkAdmin()">Login</button>
+      <button class="btn-secondary" onclick="closeAdminModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETUP BANNER (shown when client ID not set) -->
+<div id="setupBanner" style="display:none;background:#FFF8E7;border-bottom:1px solid #FFD166;padding:12px 20px;font-size:13px;color:#78350F;text-align:center;">
+  &#9888;&#65039; <strong>Setup needed:</strong> Open the HTML file and replace <code style="background:#FDE68A;padding:1px 6px;border-radius:3px;font-family:monospace">244912988996-an6ml49epsme5lt1adhh4k6hadvma7b6.apps.googleusercontent.com</code> with your actual Google OAuth Client ID to enable Google Sign-In. &nbsp;<button onclick="this.parentElement.style.display='none'" style="background:none;border:none;cursor:pointer;color:#92400E;font-weight:600">&#10005;</button>
+</div>
+
+<main>
+  <div id="homeScreen">
+    <div class="home-hero">
+      <h2 class="hindi">&#2309;&#2349;&#2381;&#2351;&#2366;&#2360; &#2325;&#2352;&#2375;&#2306;, &#2310;&#2327;&#2375; &#2348;&#2397;&#2375;&#2306;!</h2>
+      <p>Practice makes perfect &middot; PSLE Hindi preparation</p>
+      <div class="hero-stats">
+        <div class="hero-stat"><div class="n">300+</div><div class="l">Questions</div></div>
+        <div class="hero-stat-div"></div>
+        <div class="hero-stat"><div class="n">13</div><div class="l">Collections</div></div>
+        <div class="hero-stat-div"></div>
+        <div class="hero-stat"><div class="n">5</div><div class="l">Sections</div></div>
+      </div>
+    </div>
+    <p class="section-title">Choose mode</p>
+    <div class="mode-grid">
+      <div class="mode-card selected" onclick="selectMode(this,'all')"><div class="icon">&#128218;</div><h3>All sections</h3><p>Mix of language, comprehension &amp; vocabulary</p><div class="check">&#10003;</div></div>
+      <div class="mode-card" onclick="selectMode(this,'language')"><div class="icon">&#9999;</div><h3>Language use</h3><p>Fill in the blanks (A1 &amp; A2)</p><div class="check">&#10003;</div></div>
+      <div class="mode-card" onclick="selectMode(this,'cloze')"><div class="icon">&#128214;</div><h3>Cloze comprehension</h3><p>Read passages, fill missing words (A3)</p><div class="check">&#10003;</div></div>
+      <div class="mode-card" onclick="selectMode(this,'comprehension')"><div class="icon">&#128269;</div><h3>Comprehension</h3><p>Read stories, answer MCQ (A4)</p><div class="check">&#10003;</div></div>
+      
+      <div class="mode-card" onclick="selectMode(this,'oral')"><div class="icon">🎤</div><h3>Oral practice</h3><p>Describe pictures aloud — AI gives instant feedback (A4 oral)</p><div class="check">&#10003;</div></div>
+      <div class="mode-card" onclick="selectMode(this,'vocabulary')"><div class="icon">&#11088;</div><h3>Vocabulary</h3><p>Synonyms &amp; word meanings</p><div class="check">&#10003;</div></div>
+    </div>
+    <p class="section-title">Select collection</p>
+    <div class="year-grid" id="yearGrid">
+      <button class="year-btn active" onclick="toggleYear(this,'all')">All</button>
+      <button class="year-btn" onclick="toggleYear(this,'2012')">1 </button>
+      <button class="year-btn" onclick="toggleYear(this,'2013')">2 </button>
+      <button class="year-btn" onclick="toggleYear(this,'2014')">3 </button>
+      <button class="year-btn" onclick="toggleYear(this,'2015')">4 </button>
+      <button class="year-btn" onclick="toggleYear(this,'2016')">5 </button>
+      <button class="year-btn" onclick="toggleYear(this,'2017')">6 </button>
+      <button class="year-btn" onclick="toggleYear(this,'2018')">7 </button>
+      <button class="year-btn" onclick="toggleYear(this,'2019')">8 </button>
+      <button class="year-btn" onclick="toggleYear(this,'2020')">9 </button>
+      <button class="year-btn" onclick="toggleYear(this,'2021')">10 </button>
+      <button class="year-btn" onclick="toggleYear(this,'2022')">11 </button>
+      <button class="year-btn" onclick="toggleYear(this,'2023')">12 </button>
+      <button class="year-btn" onclick="toggleYear(this,'2024')">13 </button>
+    </div>
+    <button class="btn-start" onclick="startQuiz()">Start Quiz &#8594;</button>
+  </div>
+  <div id="quizScreen" style="display:none">
+    <div class="progress-wrap">
+      <div class="progress-meta"><span id="progText">Question 1</span><span id="progPct">0%</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+    </div>
+    <div id="quizContent"></div>
+  </div>
+  <div id="doneScreen" style="display:none">
+    <div class="done-hero">
+      <div class="done-emoji" id="doneEmoji">&#127881;</div>
+      <h2 id="doneTitle">Practice complete!</h2>
+      <p id="doneSub">You finished the quiz</p>
+      <div class="score-display" id="doneScore">0%</div>
+      <div class="score-sub" id="doneScoreSub">0 correct</div>
+      <div class="done-stats">
+        <div class="done-stat-card c"><div class="n" id="doneC">0</div><div class="l">&#10003; Correct</div></div>
+        <div class="done-stat-card w"><div class="n" id="doneW">0</div><div class="l">&#10007; Wrong</div></div>
+        <div class="done-stat-card sk"><div class="n" id="doneSK">0</div><div class="l">&#8212; Skipped</div></div>
+      </div>
+      <div class="done-btns">
+        <button class="btn-primary" onclick="restartQuiz()">Try again</button>
+        <button class="btn-secondary" onclick="goHome()">&#8962; Home</button>
+      </div>
+    </div>
+  </div>
+
+<!-- ADMIN DASHBOARD -->
+<div id="adminScreen" style="display:none">
+  <div style="max-width:900px;margin:0 auto;padding:24px 20px 80px">
+    <div class="admin-header-bar">
+      <div>
+        <h2>&#128202; Admin Dashboard</h2>
+        <p>Hindi Practice · PSLE 2012–2024</p>
+      </div>
+      <button class="btn-logout" onclick="adminLogout()">&#8592; Exit Admin</button>
+    </div>
+    <div class="setup-card">
+      <h4>&#9881;&#65039; Google Sign-In Setup (one-time)</h4>
+      <ol>
+        <li>Go to <strong>console.cloud.google.com</strong> → create a project</li>
+        <li>APIs &amp; Services → <strong>Credentials</strong> → Create Credentials → OAuth client ID</li>
+        <li>Application type: <strong>Web application</strong></li>
+        <li>Authorised JavaScript origins: add <code>file://</code> "http://localhost"</li>
+        <li>Copy the <strong>Client ID</strong> and paste it in the HTML file replacing <code>244912988996-an6ml49epsme5lt1adhh4k6hadvma7b6.apps.googleusercontent.com</code></li>
+      </ol>
+    </div>
+    <div class="admin-grid">
+      <div class="admin-stat"><div class="n" id="adTotalUsers">0</div><div class="l">Registered users</div></div>
+      <div class="admin-stat"><div class="n" id="adTotalSessions">0</div><div class="l">Quiz sessions</div></div>
+      <div class="admin-stat"><div class="n" id="adAvgScore">—</div><div class="l">Avg. score</div></div>
+      <div class="admin-stat"><div class="n" id="adActiveToday">0</div><div class="l">Active today</div></div>
+    </div>
+    <div class="admin-table-wrap">
+      <div class="admin-table-title">
+        <span>User activity</span>
+        <button class="btn-secondary" style="padding:6px 12px;font-size:12px" onclick="refreshAdminData()">&#8635; Refresh</button>
+      </div>
+      <table class="admin-table">
+        <thead><tr><th>User</th><th>Email</th><th>Sessions</th><th>Best score</th><th>Last seen</th></tr></thead>
+        <tbody id="adminTableBody"><tr><td colspan="5" style="text-align:center;padding:24px;color:var(--muted)">No user data yet. Users will appear here after they log in and complete quizzes.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- ORAL PRACTICE SCREEN -->
+<div id="oralScreen" style="display:none">
+  <div style="max-width:720px;margin:0 auto">
+    <div class="progress-wrap">
+      <div class="progress-meta"><span id="oralProgText">Picture 1</span><span id="oralProgPct">0%</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="oralProgFill" style="width:0%"></div></div>
+    </div>
+    <div id="oralContent"></div>
+  </div>
+</div>
+
+</main>
+<div class="toast" id="toast"></div>
+<script>
+const DB={
+"2012":{
+"Language Use":{passage:"[1] एक प्यासी मधुमक्खी पानी पीने के लिए एक नदी पर गई। अचानक, यह पानी में गिर गई और प्रवाह ने उसे [1] । एक कबूतर [2] एक पेड़ पर बैठा था। उसने पेड़ का एक पत्ता उठाया और उसे पानी में [3] । कुछ दिनों के [4] कबूतर फिर उसी पेड़ पर था। मधुमक्खी ने एक शिकारी को बंदूक पक्षी की ओर [5] देखा।",
+questions:[
+{q:"___1___ के लिए सही शब्द:",opts:["हटा दिया","खींच लिया","मसल दिया","बहा दिया"],ans:3},
+{q:"___2___ के लिए सही शब्द:",opts:["समीपता","दूरी","अगला","पास के"],ans:3},
+{q:"___3___ के लिए सही शब्द:",opts:["जड़ दिया","डाल दिया","उठा लिया","खड़ा कर दिया"],ans:1},
+{q:"___4___ के लिए सही शब्द:",opts:["चले गए","पहले","बाद","बीत गए"],ans:2},
+{q:"___5___ के लिए सही शब्द:",opts:["तानते","पेश करते","दिखलाते","खींचते"],ans:0}]},
+"Cloze Comprehension":{passage:"एक अंधा आदमी एक शहर में रहता था। वह एक बाज़ार में एक सड़क के [11] बैठा गिटार बजाता था। उसका कुत्ता अपने [12] में एक हैट को पकड़े बैठा था। पास से लोग उस हैट में सिक्के [13] जाते थे। एक दिन हर कोई त्यौहार के लिए भोजन और कपड़े [14] में व्यस्त था। अंधे की आवाज़ पर किसी का [15] नहीं जा रहा था। हैट में लगभग [16] था। एक नौजवान आकर उसे [17] गाना शुरू कर दिया। उनके [18] लोगों की भीड़ लगने लगी। जल्दी ही हैट [19] गई। अंधे ने नौजवान का [20] किया।",
+questions:[
+{q:"___11___ के लिए:",opts:["भीतर","बाहर","किनारे","नीचे"],ans:2},
+{q:"___12___ के लिए:",opts:["नेत्रों","हाथों","कानों","दाँतों"],ans:3},
+{q:"___13___ के लिए:",opts:["छुपा","डाल","चला","बो"],ans:1},
+{q:"___14___ के लिए:",opts:["मुस्कुराने","बोलने","सोचने","खरीदने"],ans:3},
+{q:"___15___ के लिए:",opts:["पहचान","ध्यान","अहसास","झलक"],ans:1},
+{q:"___16___ के लिए:",opts:["थोड़ा सा","सब कुछ","कुछ नहीं","कुछ-कुछ"],ans:2},
+{q:"___17___ के लिए:",opts:["बजाना","खोलना","चलाना","खींचना"],ans:0},
+{q:"___18___ के लिए:",opts:["बीच में","साथ में","आस-पास","पंक्ति में"],ans:2},
+{q:"___19___ के लिए:",opts:["समाप्त","भर","पूरा","घिर"],ans:1},
+{q:"___20___ के लिए:",opts:["धन्यवाद","नमस्ते","संकेत","हाव-भाव"],ans:0}]},
+"Comprehension":{passage:"ग्यारह साल का नंदू अपने माता-पिता, दादी और बड़ी बहन रीमा के साथ रहता था। उसका भाई विदेश में पढ़ता था। नंदू के पिता घर से पैदल स्टेशन जाते, फिर ट्रेन, फिर बस से दफ़्तर जाते। नंदू की माँ स्वादिष्ट खाना बनाती थीं और अच्छी चित्रकार भी थीं। नंदू की माँ कंप्यूटर के विरुद्ध थी — उसे लगता था कि वह परिवार से समय छीन लेगा। पर पिता ने कंप्यूटर खरीदा। दादी ने एक रात दोस्तों को इकट्ठा किया और नंदू कंप्यूटर बंद कर शामिल हो गया।",
+questions:[
+{q:"नंदू अपने किनके साथ रहता था?",opts:["माता-पिता, बहन और दादा-दादी","माता-पिता, बहन, भाई और दादी","माता-पिता, बहन और दादी","माता-पिता, बहन और दादा"],ans:2},
+{q:"नंदू के पिता दफ़्तर कैसे जाते थे?",opts:["ट्रेन से, फिर बस से, फिर पैदल","पैदल, फिर बस से, फिर ट्रेन से","पैदल, फिर ट्रेन से, फिर बस से","बस से, फिर ट्रेन से, फिर पैदल"],ans:2},
+{q:"नंदू की माँ कंप्यूटर क्यों नहीं चाहती थी?",opts:["सामर्थ्य नहीं थी","प्रकाश के पास पहले से था","वह परिवार से समय छीन लेता","वह स्कूल काम रोक सकता था"],ans:2},
+{q:"दादी ने नंदू को कंप्यूटर से कैसे दूर किया?",opts:["उसे डाँटा","दोस्तों को इकट्ठा किया","माँ ने कहा","पिता ने रोका"],ans:1},
+{q:"नंदू की माँ के बारे में क्या सही है?",opts:["वह आजीविका के लिए काम करती थी","बेटी से रसोई में मदद लेती थी","बच्चों को वाद्य बजाना सिखाती थी","अपना बहुत समय बच्चों के साथ बिताती थी"],ans:3}]},
+"Vocabulary":{passage:"शब्दार्थ प्रश्न — कहानी के शब्दों के समान अर्थ वाले शब्द चुनें।",
+questions:[
+{q:"'गतिविधियों' का समान अर्थ:",opts:["व्यवहार","क्रिया-कलाप","छुट्टियाँ","सैर"],ans:1},
+{q:"'स्वादिष्ट' का समान अर्थ:",opts:["जायकेदार","तीखा","कड़वा","फीका"],ans:0},
+{q:"'मनमोहक' का समान अर्थ:",opts:["सच्ची","रोचक","लंबी","संगीतमय"],ans:1},
+{q:"'विरुद्ध थी' का समान अर्थ:",opts:["छोड़े हुए थी","उपेक्षित थी","सम्मानित थी","असहमत थी"],ans:3},
+{q:"'निर्देश' का समान अर्थ:",opts:["सलाह","निवेदन","आदेश","विचार"],ans:2}]}},
+"2013":{
+"Language Use":{passage:"नमस्ते बच्चों। अगले बुधवार को हमारी कक्षा की वर्षान्त सैर है — हम सिनेमा जा रहे हैं। हम सब रोज़ की तरह एसेंबली में [6] लेंगे। स्कूल की बस हमें [7] ले जाएगी। कृपया अपने साथ कुछ [8] लेकर आएँ। शो के बाद पिकनिक होगी — एक भोजन का [9] और पीने के लिए कुछ लाएँ। बस हमें शाम 3 बजे लाएगी, इसलिए माँ-बाप से [10] करें।",
+questions:[
+{q:"___6___ के लिए:",opts:["अवहेलना","इकट्ठा","भाग","विदा"],ans:2},
+{q:"___7___ के लिए:",opts:["पहले","वहाँ","नीचे","कहाँ"],ans:1},
+{q:"___8___ के लिए:",opts:["पानी","गहने","कागज़","पैसे"],ans:3},
+{q:"___9___ के लिए:",opts:["डिब्बा","भंडार","आदेश","झटपट"],ans:0},
+{q:"___10___ के लिए:",opts:["कहें","सूचित","पर","तक"],ans:1}]},
+"Comprehension":{passage:"अजय एक मेहनती लड़का था जो अपने माता-पिता की मदद के लिए हमेशा तैयार रहता था। एक बार उसने अपने पड़ोसी की बकरी को झाड़ियों में फँसा देखा। उसने बकरी को निकालने की कोशिश की पर वह नहीं निकली। उसने अपनी माँ को बुलाया और दोनों मिलकर बकरी को बाहर निकाल लाए। पड़ोसी ने अजय की तारीफ की और मिठाई दी। अजय के माता-पिता को गर्व हुआ।",
+questions:[
+{q:"अजय कैसा लड़का था?",opts:["आलसी","मेहनती","शरारती","डरपोक"],ans:1},
+{q:"बकरी कहाँ फँसी थी?",opts:["नदी में","झाड़ियों में","खेत में","कुएँ में"],ans:1},
+{q:"बकरी को बाहर कौन लाया?",opts:["केवल अजय","केवल माँ","अजय और माँ मिलकर","पड़ोसी"],ans:2},
+{q:"पड़ोसी ने अजय को क्या दिया?",opts:["पैसे","खिलौना","मिठाई","किताब"],ans:2},
+{q:"अजय के माता-पिता को कैसा लगा?",opts:["दुख हुआ","गर्व हुआ","क्रोध आया","चिंता हुई"],ans:1}]},
+"Vocabulary":{passage:"शब्दार्थ प्रश्न।",
+questions:[
+{q:"'मेहनती' का समान अर्थ:",opts:["आलसी","परिश्रमी","चालाक","ईमानदार"],ans:1},
+{q:"'तारीफ' का समान अर्थ:",opts:["आलोचना","प्रशंसा","शिकायत","निंदा"],ans:1},
+{q:"'गर्व' का समान अर्थ:",opts:["दुख","शर्म","अभिमान","क्रोध"],ans:2},
+{q:"'फँसी' का समान अर्थ:",opts:["छूटी","उड़ी","जकड़ी","भागी"],ans:2}]}},
+"2014":{
+"Language Use":{passage:"रोहन एक मेहनती छात्र था। वह रोज़ सुबह [1] उठता था। उसकी माँ उसके लिए [2] खाना बनाती थीं। रोहन स्कूल में हमेशा [3] रहता था और अपने [4] की मदद करता था। उसके अध्यापक उसकी बहुत [5] करते थे।",
+questions:[
+{q:"___1___ के लिए:",opts:["देर से","जल्दी","रात को","शाम को"],ans:1},
+{q:"___2___ के लिए:",opts:["ठंडा","स्वादिष्ट","कड़वा","पुराना"],ans:1},
+{q:"___3___ के लिए:",opts:["उदास","सावधान","खुश","थका हुआ"],ans:2},
+{q:"___4___ के लिए:",opts:["दुश्मनों","सहपाठियों","पड़ोसियों","बड़ों"],ans:1},
+{q:"___5___ के लिए:",opts:["शिकायत","आलोचना","तारीफ","परवाह"],ans:2}]},
+"Comprehension":{passage:"रमा एक छोटे गाँव में रहती थी। उसके पिता किसान थे। रमा पढ़ने में बहुत होशियार थी और उसे छात्रवृत्ति मिली। वह शहर के बड़े स्कूल में पढ़ने गई, कड़ी मेहनत की और डॉक्टर बन गई। उसने अपने गाँव में वापस आकर एक अस्पताल खोला।",
+questions:[
+{q:"रमा कहाँ रहती थी?",opts:["बड़े शहर में","छोटे गाँव में","विदेश में","पर्वत पर"],ans:1},
+{q:"रमा के पिता क्या करते थे?",opts:["डॉक्टर थे","शिक्षक थे","किसान थे","व्यापारी थे"],ans:2},
+{q:"रमा शहर क्यों गई?",opts:["नौकरी के लिए","छात्रवृत्ति मिलने पर","घूमने के लिए","विवाह के लिए"],ans:1},
+{q:"रमा बड़े होकर क्या बनी?",opts:["शिक्षक","इंजीनियर","डॉक्टर","वकील"],ans:2},
+{q:"रमा ने गाँव वापस आकर क्या किया?",opts:["खेत खरीदे","अस्पताल खोला","स्कूल खोला","कारखाना लगाया"],ans:1}]}},
+"2015":{
+"Language Use":{passage:"गर्मियों की छुट्टियों में सीमा अपने नाना-नानी के घर गई। वहाँ उसने बहुत [1] किया। नाना जी उसे बाग़ में [2] दिखाते थे। नानी जी उसे स्वादिष्ट [3] बनाकर खिलाती थीं। शाम को पूरा परिवार [4] बैठता था और कहानियाँ सुनता था। सीमा को ये छुट्टियाँ बहुत [5] लगीं।",
+questions:[
+{q:"___1___ के लिए:",opts:["रोना","आनंद","काम","इंतज़ार"],ans:1},
+{q:"___2___ के लिए:",opts:["पत्थर","फूल-पौधे","मछलियाँ","पहाड़"],ans:1},
+{q:"___3___ के लिए:",opts:["दवाई","पकवान","पत्र","किताबें"],ans:1},
+{q:"___4___ के लिए:",opts:["अलग-अलग","मिलकर","दूर","चुपचाप"],ans:1},
+{q:"___5___ के लिए:",opts:["बुरी","थकानेवाली","अच्छी","लंबी"],ans:2}]},
+"Comprehension":{passage:"सुनील एक छोटे शहर में रहता था जिसका सपना पायलट बनने का था। उसके माता-पिता ने उसे प्रोत्साहित किया। सुनील गणित और विज्ञान में बहुत अच्छा था। उसने खूब मेहनत की और विमानन अकादमी में दाखिला मिल गया। कुछ सालों बाद वह एक सफल पायलट बन गया।",
+questions:[
+{q:"सुनील का सपना क्या था?",opts:["डॉक्टर बनना","पायलट बनना","शिक्षक बनना","इंजीनियर बनना"],ans:1},
+{q:"सुनील किन विषयों में अच्छा था?",opts:["हिंदी और इतिहास","गणित और विज्ञान","अंग्रेज़ी और कला","संगीत और खेल"],ans:1},
+{q:"सुनील को कहाँ दाखिला मिला?",opts:["मेडिकल कॉलेज","लॉ कॉलेज","विमानन अकादमी","इंजीनियरिंग कॉलेज"],ans:2},
+{q:"सुनील के माता-पिता ने क्या किया?",opts:["उन्होंने विरोध किया","उन्होंने प्रोत्साहित किया","वे उदासीन थे","उन्हें चिंता थी"],ans:1}]}},
+"2016":{
+"Language Use":{passage:"राहुल और उसकी माँ एक दिन बाज़ार गए। वहाँ उन्होंने एक बूढ़ी महिला को [1] बैठे देखा। उसके पैर में [2] लगी थी। राहुल की माँ ने उसे [3] लिया और डॉक्टर के पास ले गईं। डॉक्टर ने उसकी [4] की और कहा कि वह जल्दी [5] हो जाएगी।",
+questions:[
+{q:"___1___ के लिए:",opts:["खुशी से","दर्द से","तेज़ी से","चुपचाप"],ans:1},
+{q:"___2___ के लिए:",opts:["मिठाई","खरोंच","ठंड","नींद"],ans:1},
+{q:"___3___ के लिए:",opts:["छोड़","धक्का","सहारा दे","डरा"],ans:2},
+{q:"___4___ के लिए:",opts:["आलोचना","देखभाल","उपेक्षा","निंदा"],ans:1},
+{q:"___5___ के लिए:",opts:["बीमार","ठीक","थका","उदास"],ans:1}]},
+"Comprehension":{passage:"प्रिया को चित्रकारी का बड़ा शौक था। उसके पिता ने उसे रंग और ब्रश खरीद कर दिए। प्रिया हर रोज़ नई तस्वीरें बनाती थी। एक बार स्कूल में चित्रकारी प्रतियोगिता हुई जिसमें प्रिया ने भाग लिया और पहला पुरस्कार जीता। उसके शिक्षकों और माता-पिता ने उसे बधाई दी।",
+questions:[
+{q:"प्रिया को किसका शौक था?",opts:["गाने का","नाचने का","चित्रकारी का","खेलने का"],ans:2},
+{q:"प्रिया के पिता ने उसे क्या खरीद कर दिया?",opts:["किताबें","खिलौने","रंग और ब्रश","कपड़े"],ans:2},
+{q:"स्कूल में क्या हुआ?",opts:["नाटक हुआ","खेल दिवस हुआ","गाना प्रतियोगिता हुई","चित्रकारी प्रतियोगिता हुई"],ans:3},
+{q:"प्रिया ने कौन सा पुरस्कार जीता?",opts:["दूसरा","तीसरा","पहला","चौथा"],ans:2},
+{q:"प्रिया को किसने बधाई दी?",opts:["केवल माता-पिता","केवल शिक्षकों","शिक्षकों और माता-पिता","दोस्तों ने"],ans:2}]}},
+"2018":{
+"Comprehension":{passage:"18 साल के चिकित्सा के छात्र अरुण शर्मा को विश्वविद्यालय की फ़ीस देने में कठिनाई हो रही थी। उसने और उसके दोस्त ने मिलकर संगीत का एक उत्सव कराने का फ़ैसला किया। उन्होंने पोलैंड के पियानो वादक ऑलेग को बुलाया जिसके प्रबंधक ने $2000 की फ़ीस माँगी। टिकटों से केवल $1600 मिले। ऑलेग ने पैसे वापस देते हुए कहा — 'जितना शिक्षा के लिए चाहिए, रख लो।' बहुत साल बाद अरुण एक विख्यात डॉक्टर बना। वॉर्सा के अस्पताल में ऑलेग उसके पास आया — हाथों में दर्द था। अरुण ने उसका मुफ़्त ऑपरेशन किया।",
+questions:[
+{q:"अरुण को पैसों की समस्या क्यों थी?",opts:["नौकरी नहीं थी","विश्वविद्यालय की फ़ीस देनी थी","घर खरीदना था","माँ बीमार थी"],ans:1},
+{q:"ऑलेग को कितनी फ़ीस माँगी गई थी?",opts:["$1000","$1600","$2000","$2500"],ans:2},
+{q:"ऑलेग ने पैसे वापस क्यों दिए?",opts:["उसे पैसों की ज़रूरत नहीं थी","वह दयालु था","संगीत उत्सव खराब था","प्रबंधक ने कहा"],ans:1},
+{q:"बड़े होकर अरुण क्या बना?",opts:["संगीतकार","वकील","विख्यात डॉक्टर","शिक्षक"],ans:2},
+{q:"अरुण ने ऑलेग की मदद कैसे की?",opts:["पैसे दिए","मुफ़्त ऑपरेशन किया","नौकरी दिलाई","घर दिया"],ans:1}]},
+"Vocabulary":{passage:"शब्दार्थ प्रश्न।",
+questions:[
+{q:"'कठिनाई' का समान अर्थ:",opts:["सरलता","मुश्किल","मदद","अवसर"],ans:1},
+{q:"'सुप्रसिद्ध' का समान अर्थ:",opts:["अज्ञात","प्रसिद्ध","नया","पुराना"],ans:1},
+{q:"'दयालु' का समान अर्थ:",opts:["क्रूर","कठोर","करुणामय","लालची"],ans:2},
+{q:"'विख्यात' का समान अर्थ:",opts:["मशहूर","गुमनाम","साधारण","गरीब"],ans:0}]}},
+"2019":{
+"Language Use":{passage:"शहर में बाढ़ आने से कई लोग बेघर हो गए। सरकार ने उनके लिए [1] का इंतजाम किया। राहत शिविरों में खाना और [2] दिया गया। बच्चों के लिए [3] का भी प्रबंध था। कई स्वयंसेवी संस्थाओं ने [4] लोगों की मदद की। धीरे-धीरे हालात [5] होने लगे।",
+questions:[
+{q:"___1___ के लिए:",opts:["मनोरंजन","आश्रय","परीक्षा","मेला"],ans:1},
+{q:"___2___ के लिए:",opts:["किताबें","कपड़े","खिलौने","वाहन"],ans:1},
+{q:"___3___ के लिए:",opts:["मनोरंजन","व्यापार","लड़ाई","परीक्षा"],ans:0},
+{q:"___4___ के लिए:",opts:["अमीर","बीमार","प्रभावित","शहरी"],ans:2},
+{q:"___5___ के लिए:",opts:["बुरे","बेकार","सामान्य","खतरनाक"],ans:2}]},
+"Cloze Comprehension":{passage:"एक जंगल में एक शेर रहता था। वह बहुत [1] था। एक दिन वह एक चूहे को [2] कर खाने लगा। चूहे ने विनती की कि उसे [3] कर दे। शेर ने दया दिखाई और चूहे को [4] कर दिया। कुछ दिनों बाद शेर एक जाल में [5] गया। चूहे ने अपने दाँतों से जाल काट कर शेर को आज़ाद किया।",
+questions:[
+{q:"___1___ के लिए:",opts:["छोटा","दयालु","शक्तिशाली","आलसी"],ans:2},
+{q:"___2___ के लिए:",opts:["छोड़","पकड़","देख","बुला"],ans:1},
+{q:"___3___ के लिए:",opts:["मार","जाने दे","पकड़","खाने"],ans:1},
+{q:"___4___ के लिए:",opts:["पकड़","बाँध","आज़ाद","मार"],ans:2},
+{q:"___5___ के लिए:",opts:["बच","फँस","खो","सो"],ans:1}]}},
+"2020":{
+"Language Use":{passage:"दीपावली के दिन पूरे घर में [1] की रोशनी थी। बच्चे नए [2] पहनकर खुश थे। माँ ने स्वादिष्ट [3] बनाई। परिवार के सब लोग मिलकर [4] की पूजा की। रात को [5] जलाए गए।",
+questions:[
+{q:"___1___ के लिए:",opts:["दीपों","पत्थरों","फूलों","पत्तों"],ans:0},
+{q:"___2___ के लिए:",opts:["जूते","किताबें","कपड़े","बर्तन"],ans:2},
+{q:"___3___ के लिए:",opts:["दवाई","मिठाइयाँ","सब्ज़ियाँ","रोटियाँ"],ans:1},
+{q:"___4___ के लिए:",opts:["प्रकृति","लक्ष्मी","नदी","पहाड़"],ans:1},
+{q:"___5___ के लिए:",opts:["पटाखे","फूल","दरवाज़े","किताबें"],ans:0}]},
+"Comprehension":{passage:"वनिता एक प्रसिद्ध नृत्यांगना थी। उसकी गुरु मीनाबाई ने उसे बहुत कुछ सिखाया। कड़ी मेहनत से वनिता ने कई प्रतियोगिताएँ जीतीं। एक बार राष्ट्रीय स्तर की प्रतियोगिता में उसने पहला स्थान पाया। वनिता ने कहा कि उसकी सफलता का श्रेय उसकी गुरु को जाता है।",
+questions:[
+{q:"वनिता कौन थी?",opts:["गायिका","नृत्यांगना","चित्रकार","लेखिका"],ans:1},
+{q:"वनिता की गुरु का नाम क्या था?",opts:["वीणाबाई","राधाबाई","मीनाबाई","सुनीताबाई"],ans:2},
+{q:"राष्ट्रीय प्रतियोगिता में वनिता को कौन सा स्थान मिला?",opts:["दूसरा","तीसरा","पहला","चौथा"],ans:2},
+{q:"वनिता ने अपनी सफलता का श्रेय किसे दिया?",opts:["माता-पिता को","गुरु को","खुद को","दोस्तों को"],ans:1}]}},
+"2021":{
+"Language Use":{passage:"वैज्ञानिकों ने हम में से उन लोगों के लिए एक [1] निकाला है, जिन्हें साग-सब्ज़ी खाना पसन्द नहीं है — एक ऐसी मशीन जो हमारी स्वाद कलिकाओं की सोच बदल देती है। यह मशीन [2] खाने को भी स्वादिष्ट बना सकती है। यह तकनीक 'टेस्ट चेंजर' है जो हमारी जीभ को धोखा देता है कि हम कोई मीठी चीज़ [3] रहे हैं। उम्मीद है यह आविष्कार लोगों को अधिक स्वास्थ्यवर्धक खाने में मदद करेगा, [4] अपने मनपसंद खाद्य पदार्थों का आनंद लेते हुए। वैज्ञानिक अब यह शोध कर रहे हैं कि यह तकनीक कौन से [5] खाद्य पदार्थ के स्वाद को बदल सकती है।",
+questions:[
+{q:"___1___ के लिए:",opts:["इनाम","प्रतियोगिता","समाधान","सिद्धांत"],ans:2},
+{q:"___2___ के लिए:",opts:["नमकीन","मीठे","सख़्त","फ़ीके"],ans:3},
+{q:"___3___ के लिए:",opts:["अनदेखी कर","चख","अस्वीकार","देख"],ans:1},
+{q:"___4___ के लिए:",opts:["साथ ही","फिर से","नहीं","अनिच्छा से"],ans:0},
+{q:"___5___ के लिए:",opts:["दुर्लभ","बेस्वाद","महंगी","विस्तृत"],ans:1}]},
+"Cloze Comprehension":{passage:"ज्वालामुखी एक [6] है जो पृथ्वी की सतह पर पहाड़ के बीच उपस्थित होती है, जिससे गर्म लावा, गैस एवं राख बाहर आते हैं। ज्वालामुखी विभिन्न [7] के हो सकते हैं। पृथ्वी के बहुत [8] चट्टानें कभी-कभी पिघलने लगती हैं। जब ऐसा होता है तब यह अपने ईर्द-गिर्द की [9] चट्टानों की तुलना में हल्की हो जाती हैं। यही पिघली हुई चट्टानें सतह तक [10] के रास्ते की तलाश में ऊपर उठने लगती हैं।",
+questions:[
+{q:"___6___ के लिए:",opts:["दरार","गेट","मेहराब","मंच"],ans:0},
+{q:"___7___ के लिए:",opts:["गंध","बनावटों","आकारों","छाया"],ans:2},
+{q:"___8___ के लिए:",opts:["बगल में","ऊपर","पीछे","नीचे"],ans:3},
+{q:"___9___ के लिए:",opts:["वफ़ादार","ठोस","रंगीन","शोर"],ans:1},
+{q:"___10___ के लिए:",opts:["नियंत्रित करने","समाप्त करने","फैलाने","पहुँचने"],ans:3}]},
+"Comprehension":{passage:"भेड़ को अक्सर एक शांत और मूर्ख प्राणी के रूप में वर्णित किया जाता है। लेकिन एक नया अध्ययन बताता है कि भेड़ें इंसान के चेहरे को भी पहचान सकती हैं। वैज्ञानिकों ने प्रयोग किए जहाँ भेड़ों को संचालकों की तस्वीरों की पहचान के लिए भोजन से पुरस्कृत किया गया। प्रशिक्षण के बाद भेड़ों ने दस में से आठ बार सुप्रसिद्ध व्यक्ति का चेहरा सही से चुना। जब संचालक की तस्वीर अचानक दिखाई गई, भेड़ों ने दस में से सात बार उसे पहचाना।",
+questions:[
+{q:"भेड़ें",opts:["बुद्धिमान नहीं हैं","कंप्यूटर स्क्रीन देखना पसंद करती हैं","हम जितना सोचते हैं उससे अधिक बुद्धिमान हैं","हमेशा ख़ामोश रहती हैं"],ans:2},
+{q:"भेड़ों को भोजन किसलिए दिया गया?",opts:["किसी खेत में घूमने","आकृति दो बार देखने","संचालकों को पसंद करना दिखाने","संचालक का चेहरा पहचानने"],ans:3},
+{q:"प्रयोग में अलार्म बजता था",opts:["जब भेड़ स्क्रीन के बहुत करीब आती","जब भेड़ें असफल होतीं","जब भेड़ों को भोजन दिया जाता","जब भेड़ें 100% सही उत्तर देतीं"],ans:1},
+{q:"वैज्ञानिकों ने परीक्षणों को कठिन बनाने के लिए",opts:["तस्वीरें जल्दी दिखाईं","तस्वीरें एक कोने से दिखाईं","तस्वीरें उल्टी दिखाईं","तस्वीरें काली-श्वेत दिखाईं"],ans:1}]},
+"Vocabulary":{passage:"शब्दार्थ प्रश्न।",
+questions:[
+{q:"'सुझाता' का समान अर्थ:",opts:["सुनता","नकारता","मांगता","बताता"],ans:3},
+{q:"'पहचानने' का समान अर्थ:",opts:["जानने","काटने","जीतने","ढकेलने"],ans:0},
+{q:"'सामान्यतः' का समान अर्थ:",opts:["आमतौर पर","आधिकारिक तौर पर","सही ढंग से","शायद ही कभी"],ans:0},
+{q:"'जोड़ना' का समान अर्थ:",opts:["बाँधना","मिश्रित करना","मिलाना","अलग करना"],ans:2}]}},
+"2022":{
+"Language Use":{passage:"माउंट एवरेस्ट दुनिया का सबसे ऊँचा पर्वत है। [1] करें कि ऊपर तक चढ़ने पर पता चले कि शिखर कचरे से भरा है। विशेषज्ञों का कहना है कि पर्वत पर लगभग 50 टन कचरा है — थके पर्वतारोहियों द्वारा [2] गई खाली ऑक्सीजन टंकियाँ, टूटे तम्बू के डंडे। नेपाल की सरकार चाहती है कि पाँच वर्षों [3] पहाड़ की सफाई हो। पर्वतारोहियों को [4] कचरे के साथ कम से कम आठ किलोग्राम कचरा वापस लाना होगा। साथ लाए कचरे को [5] करने के लिए देना होगा।",
+questions:[
+{q:"___1___ के लिए:",opts:["पहचान","समझ","कल्पना","अपेक्षा"],ans:2},
+{q:"___2___ के लिए:",opts:["दान की","छोड़ दी","खरीदी","उधार ली"],ans:1},
+{q:"___3___ के लिए:",opts:["में","से परे","उनमें","की ओर"],ans:0},
+{q:"___4___ के लिए:",opts:["सार्वजनिक","अपने","अनुमित","स्वीकार्य"],ans:1},
+{q:"___5___ के लिए:",opts:["तुलना","पुनर्नवीनीकरण","बिक्री","वज़न"],ans:3}]},
+"Cloze Comprehension":{passage:"अक्टूबर 2019 में अंतर्राष्ट्रीय अंतरिक्ष स्टेशन पर दो अंतरिक्ष यात्रियों ने पहली बार अखिल-महिला [11] में भाग लिया। उन्होंने सुबह आठ बजे के आसपास अंतरिक्ष स्टेशन को [12] । निकास की ओर जाने से पहले उन्होंने मानक जाँच करने से [13] किया। उन्होंने [14] के लिए स्टेशन के [15] सूट और सुरक्षा डोरियों की जाँच की। इसी तरह की अंतरिक्ष पदयात्रा की [16] साल की शुरुआत में भी बनाई गई थी, लेकिन इसे रद्द करना पड़ा क्योंकि महिलाओं के लिए [17] माप के स्पेससूट उपलब्ध नहीं थे। नासा की योजना है कि पहली महिला चंद्रमा की [20] पर पैर रखेगी।",
+questions:[
+{q:"___11___ के लिए:",opts:["पाठ","संगीत कार्यक्रम","अंतरिक्ष-पदयात्रा","प्रक्षेपण"],ans:2},
+{q:"___12___ के लिए:",opts:["खोया","छोड़ा","खोजा","नापा"],ans:1},
+{q:"___13___ के लिए:",opts:["शुरु","चयन","ढूंढा","भूला"],ans:0},
+{q:"___16___ के लिए:",opts:["योजना","भुगतान","निर्माण","खोना"],ans:0},
+{q:"___17___ के लिए:",opts:["अनुचित","सही","बड़े","ईमानदार"],ans:1},
+{q:"___20___ के लिए:",opts:["सतह","अंदर","आकाश","तारा"],ans:0}]},
+"Comprehension":{passage:"एक बेटी ने अपने पिता से शिकायत की कि उसका जीवन दुखमय था — एक समस्या हल होती है तो दूसरी सामने आ जाती है। उसके पिता, एक रसोइया, उसे रसोई में ले गए। उन्होंने तीन बर्तनों में पानी उबाला — पहले में आलू, दूसरे में अंडे, तीसरे में पिसी कॉफ़ी के दाने। आलू नरम हो गया। अंडा सख्त हो गया। पर पिसे हुए कॉफ़ी के दानों ने पानी को ही बदल दिया। पिता ने पूछा — 'इनमें से तुम कौन हो?'",
+questions:[
+{q:"बेटी नाखुश थी क्योंकि",opts:["वह समस्याओं से लड़ नहीं पा रही थी","उसे पता नहीं था क्या करे","उसकी समस्याएं कभी खत्म नहीं होतीं","पिता मदद नहीं कर रहे थे"],ans:2},
+{q:"पिता ने अलग-अलग बर्तनों में क्या रखा?",opts:["उबलते पानी के अलग-अलग बर्तनों में आलू, अंडे और कॉफ़ी","ठंडे पानी में सब","कम आँच पर एक बर्तन में सब","उबलते पानी के एक बर्तन में सब"],ans:0},
+{q:"कॉफ़ी को अनोखा क्यों माना गया?",opts:["इसने पानी को कुछ नए में बदल दिया","इसने आलू और अंडे की तरह स्वभाव नहीं बदला","इसने भरपूर सुगंध पैदा की","इसका स्वाद अच्छा था"],ans:0},
+{q:"पिता के विचार में किसके समान होना सर्वोतम है?",opts:["आलू","अंडे","पिसी कॉफ़ी के दाने","तीनों में से कोई नहीं"],ans:2}]},
+"Vocabulary":{passage:"शब्दार्थ प्रश्न।",
+questions:[
+{q:"'दुखमय' का समान अर्थ:",opts:["चिड़चिड़ा","उदास","बुरा","गंदा"],ans:1},
+{q:"'अधीरतापूर्वक' का समान अर्थ:",opts:["गुस्से से","पागलपन से","क्रोध से","बेसब्री से"],ans:3},
+{q:"'नाजुक' का समान अर्थ:",opts:["पतला","दुर्बल","कोमल","अशक्त"],ans:2},
+{q:"'विपत्ति' का समान अर्थ:",opts:["अवसर","कठिनाई","स्पष्टता","पीड़ा"],ans:1}]}},
+"2023":{
+"Language Use":{passage:"आज 170 से अधिक संग्रहालय 'स्लो आर्ट डे' मना रहे हैं। वे उनके [1] से कला के एक कार्य को देखने में पाँच-दस मिनट बिताने के लिए कह रहे हैं, ताकि उन्हें कला की गहराई से [2] करने के लिए प्रोत्साहित किया जा सके। अधिकतर लोग एक कलाकृति को देखने में सिर्फ दस सेकंड लगाते हैं। जब लोग कला को देखने में अधिक समय लेते हैं जिसे वे [3] से चूक सकते हैं, तब वे उसे अधिक [4] मूल्यांकन करते हैं। लंबे समय तक कला का अध्ययन करने से, लोगों को कलाकारों के विचारों की [5] समझ प्राप्त होती है।",
+questions:[
+{q:"___1___ के लिए:",opts:["गवाहों","चालकों","दर्शकों","यात्रियों"],ans:2},
+{q:"___2___ के लिए:",opts:["सराहना","उत्पादन","नापसंद","अनादर"],ans:0},
+{q:"___3___ के लिए:",opts:["नज़रअंदाज़","क्रमिक","जल्दी","भूल"],ans:2},
+{q:"___4___ के लिए:",opts:["क्रमिक","जल्दी","चौड़ा","चिड़चिड़ा"],ans:0},
+{q:"___5___ के लिए:",opts:["बदतर","आकर्षक","छोटी","बेहतर"],ans:3}]},
+"Comprehension":{passage:"एक पिता रात को जब अपने बच्चे के बिस्तर के पास बैठे हुए थे, तब उन्हें एक कहानी सुनाने के लिए कहा गया। उन्होंने प्रयास किया लेकिन वे अटक-अटक कर बुदबुदाए। बेटी ने सुझाया कि लड़की एक राजकुमारी होनी चाहिए और उसके पास एक जादुई घोड़ा भी होना चाहिए। पिता ने ये बदलाव कर दिए और कहानी को सफलता मिल गई। तीन साल में उन्होंने 600 सोने के समय की कहानियाँ सुनाईं और चार सबक सीखे — हर कहानी में शुरुआत, मध्य और अंत हो; विराम से जिज्ञासा बनती है; शरीर का उपयोग कहानी को जीवंत बनाता है; बच्चों को सह-कहानीकार बनाएँ।",
+questions:[
+{q:"आरम्भ में, कहानी कहने वाले पिता",opts:["को कहानी में आत्मविश्वास था","ने बेटी के सुझाव नज़रअंदाज किए","बिस्तर पर बैठ गए","स्पष्टता से नहीं बोले"],ans:3},
+{q:"तीन साल बाद, पिता",opts:["ने जो सीखा उसे औरों को देना चाहते थे","अभी भी उबाऊ कहानियाँ सुनाते हैं","को कहानी सुनाने का थोड़ा अनुभव है","बीच में कभी नहीं सोते हैं"],ans:0},
+{q:"सभी कहानियों को ________ होना चाहिए।",opts:["सकारात्मक","स्पष्ट संरचना वाला","हाथियों को शामिल करने वाला","अनेक उपदेशों वाला"],ans:1},
+{q:"कहानी में विरामों का उपयोग",opts:["कहानी को अपेक्षित बनाता है","आवाज़ को अस्थिर बनाता है","बच्चे की रुचि बनाए रखता है","शब्दों को एक समान गति में रखता है"],ans:2},
+{q:"सोते समय की कहानी सुनते हुए सो जाना",opts:["पिता के लिए दुखद है","बताता है बेटी को पसंद नहीं आई","हर बार होता है","एक अच्छा परिणाम है"],ans:3}]},
+"Vocabulary":{passage:"शब्दार्थ प्रश्न।",
+questions:[
+{q:"'सफलता' का समान अर्थ:",opts:["दिक्कत","जीत","ताकत","हानि"],ans:1},
+{q:"'अच्छे-व्यवहार' का समान अर्थ:",opts:["स्वच्छ","खुश","शरारती","सभ्य"],ans:3},
+{q:"'मतभेद' का समान अर्थ:",opts:["असहमति","बातचीत","निष्कर्ष","परिचय"],ans:0},
+{q:"'अप्रत्याशित' का समान अर्थ:",opts:["तार्किक","पूर्वानुमान","आश्चर्यजनक","जादुई"],ans:2},
+{q:"'परिवर्तन' का समान अर्थ:",opts:["मानना","बदलाव","संभालना","जुड़ाव"],ans:1}]}},
+"2024":{
+"Language Use":{passage:"क्या आपको रंग करना पसंद है? क्या आप किसी अद्भुत कला से [6] होने के लिए तैयार हैं? ऐसे में इस सप्ताह से [7] कोई समय नहीं है। 100 से अधिक संग्रहालय, पुस्तकालय और कला दीर्घाएं 'रंग भरने की कला' परियोजना में भाग ले रही हैं। किसी भी व्यक्ति को किताबें निःशुल्क [8] । शीला घोष जो इस परियोजना का [9] कर रही हैं — कहती हैं कि रंग भरने वाली किताबों की संरचना बच्चों और वयस्कों दोनों के लिए है। इस परियोजना का [10] अधिक लोगों को इन संस्थानों पर बुलाना है।",
+questions:[
+{q:"___6___ के लिए:",opts:["चिड़चिड़ा","परेशान","उत्साहित","निर्धारित"],ans:2},
+{q:"___7___ के लिए:",opts:["बेहतर","धीमा","अल्प","बड़ा"],ans:0},
+{q:"___8___ के लिए:",opts:["संभव","मिलेंगी","कठिन","सुविधाजनक"],ans:1},
+{q:"___9___ के लिए:",opts:["लड़ाई","ख़रीदारी","चिंता","निर्देशन"],ans:3},
+{q:"___10___ के लिए:",opts:["टुकड़ा","उद्देश्य","उपहार","और भी"],ans:1}]},
+"Cloze Comprehension":{passage:"एक राजा था जिसे दो शानदार बाज़ उपहार में मिले। वे अब तक के सबसे [11] पक्षी थे। महीनों बाद पता चला कि जहाँ एक बाज़ [12] दोनों में से बेहतर उड़ रहा था, वहीं दूसरा उस दिन से [13] भी नहीं था। राजा ने [14] भर से विशेषज्ञों को बुलाया — पर पक्षी खिड़की [15] देखने पर भी नहीं हिला। राजा ने सोचा कि एक [16] व्यक्ति की ज़रूरत है। इसलिए उन्होंने एक [17] को बुलाया। सुबह राजा दूसरे बाज़ को महल के ऊपर उड़ता देख [18] हो उठा। किसान ने कहा — 'मैंने [20] उस डाली को काट दिया जहाँ बाज़ बैठा था।'",
+questions:[
+{q:"___11___ के लिए:",opts:["सुंदर","स्वादिष्ट","नम","मैला"],ans:0},
+{q:"___12___ के लिए:",opts:["बावजूद","क्योंकि","यद्यपि","और भी"],ans:2},
+{q:"___13___ के लिए:",opts:["दौड़ा","गिरा","बचा","हिला"],ans:3},
+{q:"___16___ के लिए:",opts:["गुस्सा","प्रसन्न","जानकार","उदास"],ans:2},
+{q:"___17___ के लिए:",opts:["रसोईया","किसान","नाविक","वकील"],ans:1},
+{q:"___18___ के लिए:",opts:["साहसी","नाराज़","भयभीत","रोमांचित"],ans:3},
+{q:"___20___ के लिए:",opts:["केवल","थोड़ा","लगातार","मूर्खतापूर्ण"],ans:0}]},
+"Vocabulary":{passage:"शब्दार्थ प्रश्न।",
+questions:[
+{q:"'प्रतीक' का समान अर्थ:",opts:["कहानी","उपदेश","चिन्ह","टिप्पणी"],ans:2},
+{q:"'लगाव' का समान अर्थ:",opts:["प्रेम","प्रसिद्धि","दिखावट","सुन्दरता"],ans:0},
+{q:"'सहायता' का समान अर्थ:",opts:["लाभ","मदद","रोकथाम","अभिवादन"],ans:1},
+{q:"'गर्व' का समान अर्थ:",opts:["निराश","व्यस्त","संतुष्ट","तंग"],ans:2},
+{q:"'शौक' का समान अर्थ:",opts:["काम","रहस्य","खेल","मनोविनोद"],ans:3}]}}
+};
+
+let selectedMode='all',selectedYears=['all'],questions=[],current=0;
+let answered=false,correct=0,wrong=0,answers={};
+
+function selectMode(el,mode){document.querySelectorAll('.mode-card').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');selectedMode=mode;}
+function toggleYear(el,year){
+  if(year==='all'){document.querySelectorAll('.year-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');selectedYears=['all'];}
+  else{
+    const aBtn=document.querySelector('.year-btn:first-child');aBtn.classList.remove('active');
+    if(el.classList.contains('active')){el.classList.remove('active');selectedYears=selectedYears.filter(y=>y!==year);if(!selectedYears.length){aBtn.classList.add('active');selectedYears=['all'];}}
+    else{el.classList.add('active');if(selectedYears.includes('all'))selectedYears=[];selectedYears.push(year);}
+  }
+}
+function buildQ(){
+  const res=[];
+  const yrs=selectedYears.includes('all')?Object.keys(DB):selectedYears;
+  yrs.forEach(yr=>{
+    if(!DB[yr])return;
+    Object.entries(DB[yr]).forEach(([sec,data])=>{
+      const st=sec.toLowerCase().replace(/[^a-z]/g,'');
+      const inc=selectedMode==='all'||
+        (selectedMode==='language'&&st.includes('language'))||
+        (selectedMode==='cloze'&&st.includes('cloze'))||
+        (selectedMode==='comprehension'&&st.includes('comprehension')&&!st.includes('cloze')&&!st.includes('vocabulary'))||
+        (selectedMode==='vocabulary'&&st.includes('vocabulary'));
+      if(inc)data.questions.forEach(q=>res.push({year:yr,section:sec,passage:data.passage,...q}));
+    });
+  });
+  return shuf(res);
+}
+function shuf(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+function startQuiz(){
+  questions=buildQ();if(!questions.length){toast('No questions found. Try different filters!');return;}
+  current=0;correct=0;wrong=0;answered=false;answers={};
+  updH();
+  document.getElementById('homeScreen').style.display='none';
+  document.getElementById('doneScreen').style.display='none';
+  document.getElementById('quizScreen').style.display='block';
+  document.getElementById('headerScore').style.display='flex';
+  document.getElementById('homeBtn').style.display='flex';
+  renderQ();
+}
+function updH(){
+  document.getElementById('hCorrect').textContent=correct;
+  document.getElementById('hWrong').textContent=wrong;
+  document.getElementById('hTotal').textContent=current;
+}
+function renderQ(){
+  if(current>=questions.length){showDone();return;}
+  const q=questions[current];const prev=answers[current];answered=!!prev;
+  const pct=Math.round((current/questions.length)*100);
+  document.getElementById('progText').textContent='Question '+(current+1)+' of '+questions.length;
+  document.getElementById('progPct').textContent=pct+'%';
+  document.getElementById('progFill').style.width=pct+'%';
+  const opH=q.opts.map((o,i)=>{
+    let cls='opt hindi';
+    if(prev!==undefined){if(i===q.ans)cls+=' correct';else if(i===prev.chosen&&i!==q.ans)cls+=' wrong';}
+    return '<button class="'+cls+'" id="opt'+i+'" onclick="selOpt('+i+')" '+(prev!==undefined?'disabled':'')+'>'+
+      '<span class="opt-num">'+(i+1)+'</span><span class="opt-text hindi">'+o+'</span></button>';
+  }).join('');
+  let fbH='';
+  if(prev!==undefined){
+    fbH=prev.isCorrect
+      ?'<div class="feedback-box show correct"><span>&#9989;</span><span class="hindi"> &#2360;&#2361;&#2368;! (Correct!)</span></div>'
+      :'<div class="feedback-box show wrong"><span>&#10060;</span><span class="hindi"> &#2327;&#2354;&#2340;&#x964; &#2360;&#2361;&#2368; &#2313;&#2340;&#2381;&#2340;&#2352;: '+(q.ans+1)+'. '+q.opts[q.ans]+'</span></div>';
+  }
+  const isL=current===questions.length-1;
+  const bk=current>0?'<button class="btn-secondary" onclick="prevQ()">&#8592; Back</button>':'<button class="btn-secondary" disabled>&#8592; Back</button>';
+  const nx=prev!==undefined?'<button class="btn-primary" onclick="nextQ()">'+(isL?'Finish &#10003;':'Next &#8594;')+'</button>':'<button class="btn-secondary" onclick="skipQ()">'+(isL?'Finish &#8594;':'Skip &#8594;')+'</button>';
+  document.getElementById('quizContent').innerHTML=
+    '<div class="q-meta"><span class="tag tag-year">'+q.year+'</span><span class="tag tag-section">'+q.section+'</span></div>'+
+    '<div class="passage-card hindi">'+fmtP(q.passage)+'</div>'+
+    '<div class="q-card"><div class="q-number">Question '+(current+1)+'</div><div class="q-text hindi">'+q.q+'</div><div class="options">'+opH+'</div>'+fbH+'<div class="btn-row" id="btnRow">'+bk+nx+'</div></div>';
+}
+function fmtP(p){return p.replace(/\[(\d+)\]/g,'<span class="blank-hl">___$1___</span>');}
+function selOpt(i){
+  if(answered)return;answered=true;
+  const q=questions[current];const isC=i===q.ans;
+  if(answers[current]===undefined){if(isC)correct++;else wrong++;updH();}
+  answers[current]={chosen:i,isCorrect:isC};
+  q.opts.forEach((_,idx)=>{const el=document.getElementById('opt'+idx);el.disabled=true;if(idx===q.ans)el.classList.add('correct');else if(idx===i&&!isC)el.classList.add('wrong');});
+  const fbEl=document.createElement('div');
+  fbEl.className='feedback-box show '+(isC?'correct':'wrong');
+  fbEl.innerHTML=isC?'&#9989; <span class="hindi">&#2360;&#2361;&#2368;! (Correct!)</span>':'&#10060; <span class="hindi">&#2327;&#2354;&#2340;&#x964; &#2360;&#2361;&#2368; &#2313;&#2340;&#2381;&#2340;&#2352;: '+(q.ans+1)+'. '+q.opts[q.ans]+'</span>';
+  const card=document.getElementById('quizContent').querySelector('.q-card');
+  const ex=card.querySelector('.feedback-box');if(ex)ex.replaceWith(fbEl);else card.insertBefore(fbEl,document.getElementById('btnRow'));
+  const isL=current===questions.length-1;
+  const bk=current>0?'<button class="btn-secondary" onclick="prevQ()">&#8592; Back</button>':'<button class="btn-secondary" disabled>&#8592; Back</button>';
+  document.getElementById('btnRow').innerHTML=bk+'<button class="btn-primary" onclick="nextQ()">'+(isL?'Finish &#10003;':'Next &#8594;')+'</button>';
+}
+function prevQ(){current--;renderQ();}
+function skipQ(){
+  if(answers[current]===undefined){wrong++;answers[current]={chosen:-1,isCorrect:false,skipped:true};updH();}
+  current++;updH();renderQ();
+}
+function nextQ(){current++;updH();renderQ();}
+function showDone(){
+  document.getElementById('quizScreen').style.display='none';
+  document.getElementById('doneScreen').style.display='block';
+  const tot=questions.length;const sk=Object.values(answers).filter(a=>a.skipped).length;
+  const pct=Math.round((correct/tot)*100);
+  const em=pct>=85?'&#127775;':pct>=65?'&#127881;':pct>=50?'&#128077;':'&#128218;';
+  const ti=pct>=85?'Excellent work!':pct>=65?'Well done!':pct>=50?'Good effort!':'Keep practising!';
+  document.getElementById('doneEmoji').innerHTML=em;
+  document.getElementById('doneTitle').textContent=ti;
+  document.getElementById('doneSub').textContent='You completed '+tot+' questions';
+  document.getElementById('doneScore').textContent=pct+'%';
+  document.getElementById('doneScoreSub').textContent=correct+' correct out of '+tot;
+  document.getElementById('doneC').textContent=correct;
+  document.getElementById('doneW').textContent=wrong;
+  document.getElementById('doneSK').textContent=sk;
+}
+function restartQuiz(){document.getElementById('doneScreen').style.display='none';startQuiz();}
+function goHome(){
+  document.getElementById('doneScreen').style.display='none';
+  document.getElementById('quizScreen').style.display='none';
+  document.getElementById('homeScreen').style.display='block';
+  document.getElementById('headerScore').style.display='none';
+  document.getElementById('homeBtn').style.display='none';
+}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+
+// ============================================================
+// CONFIGURATION — PASTE YOUR GOOGLE CLIENT ID BELOW
+// ============================================================
+const GOOGLE_CLIENT_ID = '244912988996-an6ml49epsme5lt1adhh4k6hadvma7b6.apps.googleusercontent.com';
+
+// ADMIN PASSWORD — change this to something secure
+const ADMIN_PASSWORD = 'HindiAdmin2024!';
+
+// ============================================================
+// AUTH STATE
+// ============================================================
+let currentUser = null; // { name, email, picture, googleId }
+let isAdmin = false;
+
+// User activity stored in localStorage
+function getStoredUsers() {
+  try { return JSON.parse(localStorage.getItem('hindiUsers') || '{}'); } catch(e) { return {}; }
+}
+function saveStoredUsers(users) {
+  try { localStorage.setItem('hindiUsers', JSON.stringify(users)); } catch(e) {}
+}
+function recordSession(score, total, year, section) {
+  if (!currentUser) return;
+  const users = getStoredUsers();
+  const key = currentUser.email;
+  if (!users[key]) {
+    users[key] = { name: currentUser.name, email: currentUser.email, picture: currentUser.picture, sessions: [], firstSeen: new Date().toISOString() };
+  }
+  users[key].lastSeen = new Date().toISOString();
+  users[key].sessions = users[key].sessions || [];
+  users[key].sessions.push({ score, total, pct: Math.round(score/total*100), year, section, date: new Date().toISOString() });
+  if (users[key].sessions.length > 100) users[key].sessions = users[key].sessions.slice(-100);
+  saveStoredUsers(users);
+}
+
+// ============================================================
+// GOOGLE SIGN-IN
+// ============================================================
+function initGoogleSignIn() {
+  if (GOOGLE_CLIENT_ID === 'YOUR_GOOGLE_CLIENT_ID') {
+    document.getElementById('setupBanner').style.display = 'block';
+    // Show a disabled mock button
+    document.getElementById('googleBtn').innerHTML =
+      '<div style="display:inline-flex;align-items:center;gap:10px;padding:10px 20px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;color:#666;cursor:not-allowed;background:#f9f9f9">' +
+      '<img src="https://www.google.com/favicon.ico" width="18" height="18">Sign in with Google (setup needed)</div>';
+    return;
+  }
+  if (window.google && window.google.accounts) {
+    window.google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: handleGoogleCredential,
+      auto_select: false,
+      cancel_on_tap_outside: true
+    });
+    window.google.accounts.id.renderButton(
+      document.getElementById('googleBtn'),
+      { theme: 'outline', size: 'large', shape: 'rectangular', width: 280, text: 'signin_with', logo_alignment: 'left' }
+    );
+  } else {
+    setTimeout(initGoogleSignIn, 500);
+  }
+}
+
+function handleGoogleCredential(response) {
+  // Decode the JWT (client-side only — no backend verification in this offline app)
+  const payload = JSON.parse(atob(response.credential.split('.')[1]));
+  currentUser = {
+    name: payload.name,
+    email: payload.email,
+    picture: payload.picture,
+    googleId: payload.sub
+  };
+  onSignedIn();
+}
+
+function onSignedIn() {
+  // Update header user bar
+  document.getElementById('userAvatar').src = currentUser.picture || '';
+  document.getElementById('userName').textContent = currentUser.name.split(' ')[0];
+  document.getElementById('userBar').style.display = 'flex';
+
+  // Register user in localStorage
+  const users = getStoredUsers();
+  if (!users[currentUser.email]) {
+    users[currentUser.email] = { name: currentUser.name, email: currentUser.email, picture: currentUser.picture, sessions: [], firstSeen: new Date().toISOString() };
+  }
+  users[currentUser.email].lastSeen = new Date().toISOString();
+  saveStoredUsers(users);
+
+  // Show home
+  showScreenAfterLogin();
+}
+
+function showScreenAfterLogin() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('homeScreen').style.display = 'block';
+  document.getElementById('homeBtn').style.display = 'none';
+}
+
+function signOut() {
+  currentUser = null;
+  document.getElementById('userBar').style.display = 'none';
+  document.getElementById('headerScore').style.display = 'none';
+  document.getElementById('homeBtn').style.display = 'none';
+  // Hide all screens
+  ['homeScreen','quizScreen','doneScreen','adminScreen'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+  document.getElementById('loginScreen').style.display = 'flex';
+  if (window.google && window.google.accounts && GOOGLE_CLIENT_ID !== 'YOUR_GOOGLE_CLIENT_ID') {
+    window.google.accounts.id.disableAutoSelect();
+  }
+}
+
+// ============================================================
+// ADMIN
+// ============================================================
+function showAdminModal() {
+  document.getElementById('adminPwInput').value = '';
+  document.getElementById('adminErr').style.display = 'none';
+  document.getElementById('adminModal').style.display = 'flex';
+  setTimeout(() => document.getElementById('adminPwInput').focus(), 100);
+}
+function closeAdminModal() {
+  document.getElementById('adminModal').style.display = 'none';
+}
+function checkAdmin() {
+  const pw = document.getElementById('adminPwInput').value;
+  if (pw === ADMIN_PASSWORD) {
+    closeAdminModal();
+    isAdmin = true;
+    currentUser = { name: 'Admin', email: 'admin', picture: '', googleId: 'admin' };
+    document.getElementById('userBar').style.display = 'flex';
+    document.getElementById('userAvatar').src = '';
+    document.getElementById('userAvatar').style.display = 'none';
+    document.getElementById('userName').textContent = '🔑 Admin';
+    document.getElementById('loginScreen').style.display = 'none';
+    showAdminDashboard();
+  } else {
+    document.getElementById('adminErr').style.display = 'block';
+    document.getElementById('adminPwInput').value = '';
+    document.getElementById('adminPwInput').focus();
+  }
+}
+function adminLogout() {
+  isAdmin = false;
+  currentUser = null;
+  document.getElementById('adminScreen').style.display = 'none';
+  document.getElementById('userBar').style.display = 'none';
+  document.getElementById('userAvatar').style.display = '';
+  document.getElementById('loginScreen').style.display = 'flex';
+}
+function showAdminDashboard() {
+  ['homeScreen','quizScreen','doneScreen'].forEach(id => document.getElementById(id).style.display = 'none');
+  document.getElementById('adminScreen').style.display = 'block';
+  refreshAdminData();
+}
+function refreshAdminData() {
+  const users = getStoredUsers();
+  const userList = Object.values(users);
+  let totalSessions = 0, totalScore = 0, totalQ = 0;
+  const today = new Date().toDateString();
+  let activeToday = 0;
+  userList.forEach(u => {
+    const sessions = u.sessions || [];
+    totalSessions += sessions.length;
+    sessions.forEach(s => { totalScore += s.score; totalQ += s.total; });
+    if (u.lastSeen && new Date(u.lastSeen).toDateString() === today) activeToday++;
+  });
+  document.getElementById('adTotalUsers').textContent = userList.length;
+  document.getElementById('adTotalSessions').textContent = totalSessions;
+  document.getElementById('adAvgScore').textContent = totalQ > 0 ? Math.round(totalScore / totalQ * 100) + '%' : '—';
+  document.getElementById('adActiveToday').textContent = activeToday;
+
+  const tbody = document.getElementById('adminTableBody');
+  if (!userList.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--muted)">No users yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = userList.sort((a,b) => new Date(b.lastSeen||0)-new Date(a.lastSeen||0)).map(u => {
+    const sessions = u.sessions || [];
+    const best = sessions.length ? Math.max(...sessions.map(s=>s.pct)) : '—';
+    const lastSeen = u.lastSeen ? new Date(u.lastSeen).toLocaleDateString('en-SG',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+    const badgeCls = typeof best === 'number' && best >= 70 ? 'badge-green' : 'badge-orange';
+    return `<tr>
+      <td><div style="display:flex;align-items:center;gap:8px">${u.picture?'<img src="'+u.picture+'" width="26" height="26" style="border-radius:50%">':''}<span style="font-weight:500">${u.name}</span></div></td>
+      <td style="color:var(--muted)">${u.email}</td>
+      <td>${sessions.length}</td>
+      <td>${best !== '—' ? '<span class="badge '+badgeCls+'">'+best+'%</span>' : '—'}</td>
+      <td style="color:var(--muted)">${lastSeen}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ============================================================
+// HOOK INTO QUIZ COMPLETION TO RECORD SESSIONS
+// ============================================================
+const _origShowDone = showDone;
+window.showDone = function() {
+  _origShowDone();
+  if (currentUser && !isAdmin && questions.length) {
+    const yr = questions[0] ? questions[0].year : 'mixed';
+    const sec = questions[0] ? questions[0].section : 'mixed';
+    recordSession(correct, questions.length, yr, sec);
+  }
+};
+
+// ============================================================
+// STARTUP
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+  // Hide all main screens, show login
+  document.getElementById('homeScreen').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  initGoogleSignIn();
+});
+
+
+// ============================================================
+// ORAL PRACTICE DATA
+// ============================================================
+const ORAL_PICTURES = [
+  {
+    img:'../images/hindi_oral1.jpg',
+    },
+  {
+    img:'../images/Oral1.jpg',
+    },
+  {
+    img:'../images/Oral2.jpg',
+    },
+  {
+    img:'../images/Oral3.jpg',
+    },
+  {
+    img:'../images/Oral4.jpg',
+    },
+  {
+    img:'../images/Oral5.jpg',
+   },
+  {
+    img:'../images/Oral6.jpg',
+  },
+  {
+    img:'../images/Oral7.jpg',
+    },
+  {
+    img:'../images/Oral8.jpg',
+    },
+  {
+    img:'../images/Oral9.jpg',
+    },
+  {
+    img:'../images/Oral10.jpg',
+   },
+  {
+    img:'../images/Oral11.jpg',
+    },
+  {
+    img:'../images/Oral12.jpg',
+    },
+  {
+    img:'../images/Oral13.jpg',
+   },
+  {
+    img:'../images/Oral14.jpg',
+    },
+  {
+    img:'../images/Oral15.jpg',
+   },
+  {
+    img:'../images/Oral16.jpg',
+    },
+  {
+    img:'../images/Oral17.jpg',
+    },
+  {
+    img:'../images/Oral18.jpg',
+    },
+  {
+    img:'../images/Oral19.jpg',
+    },
+  {
+    img:'../images/Oral20.jpg',
+    },
+  {
+    img:'../images/Oral21.jpg',
+    }
+  {
+    img:'../images/Oral22.jpg',
+    }
+  {
+    img:'../images/Oral23.jpg',
+    }
+  {
+    img:'../images/Oral24.jpg',
+    }
+  {
+    img:'../images/Oral25.jpg',
+    }
+  {
+    img:'../images/Oral26.jpg',
+    }
+  {
+    img:'../images/Oral27.jpg',
+    }
+  {
+    img:'../images/Oral28.jpg',
+    }
+  {
+    img:'../images/Oral29.jpg',
+    }
+  {
+    img:'../images/Oral30.jpg',
+    }
+];
+
+// ============================================================
+// ORAL PRACTICE LOGIC
+// ============================================================
+let oralQuestions = [];
+let oralCurrent = 0;
+let mediaRecorder = null;
+let audioChunks = [];
+let recordingTimer = null;
+let recordSeconds = 0;
+let audioBlob = null;
+let isRecording = false;
+
+function startOralPractice() {
+  // Build shuffled list based on year filter
+  const yrs = selectedYears.includes('all') ? null : selectedYears;
+  oralQuestions = ORAL_PICTURES.filter(p => !yrs || yrs.includes(p.year));
+  if (!oralQuestions.length) { toast('No oral pictures for selected years. Try All years.'); return; }
+  oralQuestions = shuf([...oralQuestions]);
+  oralCurrent = 0;
+  document.getElementById('homeScreen').style.display = 'none';
+  document.getElementById('oralScreen').style.display = 'block';
+  document.getElementById('headerScore').style.display = 'none';
+  document.getElementById('homeBtn').style.display = 'flex';
+  renderOralQ();
+}
+
+function renderOralQ() {
+  if (oralCurrent >= oralQuestions.length) { showOralDone(); return; }
+  const pic = oralQuestions[oralCurrent];
+  audioBlob = null; isRecording = false;
+  const pct = Math.round((oralCurrent / oralQuestions.length) * 100);
+  document.getElementById('oralProgText').textContent = 'Picture ' + (oralCurrent+1) + ' of ' + oralQuestions.length;
+  document.getElementById('oralProgPct').textContent = pct + '%';
+  document.getElementById('oralProgFill').style.width = pct + '%';
+
+  const backBtn = oralCurrent > 0
+    ? '<button class="btn-secondary" onclick="oralPrev()">&#8592; Back</button>'
+    : '<button class="btn-secondary" disabled>&#8592; Back</button>';
+
+  document.getElementById('oralContent').innerHTML = `
+    <div class="q-meta" style="margin-bottom:12px">
+      <span class="tag tag-year">${pic.year}</span>
+      <span class="tag tag-section">${pic.type === 'sequence' ? '6 चित्र क्रम' : 'एकल चित्र'}</span>
+    </div>
+
+    <div style="background:var(--card);border-radius:14px;overflow:hidden;margin-bottom:16px;box-shadow:var(--shadow);border:1px solid var(--border)">
+      <img src="${pic.img}" alt="${pic.title}"
+        style="width:100%;display:block;max-height:420px;object-fit:contain;background:#f9f9f9"
+        onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div style="display:none;align-items:center;justify-content:center;height:200px;background:#f9f9f9;color:var(--muted);font-size:14px;flex-direction:column;gap:8px">
+        <span style="font-size:36px">🖼️</span>
+        <span>Image not found: ${pic.img}</span>
+      </div>
+      <div style="background:#FFF8E7;border-top:2px solid #FFD166;padding:16px 20px;text-align:center">
+        <p class="hindi" style="font-size:17px;font-weight:500;color:#1A1A2E;line-height:1.9">
+          नीचे दिए गए चित्र को ध्यान से देखिए और हिंदी में इसका वर्णन कीजिए।
+        </p>
+      </div>
+    </div>
+    </div>
+
+    <div style="background:var(--card);border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:var(--shadow);border:1px solid var(--border)">
+      <h4 style="font-size:15px;font-weight:600;margin-bottom:5px">&#127908; अपना उत्तर रिकॉर्ड करें</h4>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Speak clearly in Hindi for 1–2 minutes using the keywords shown above.</p>
+      <div class="record-timer" id="recTimer">0:00</div>
+      <button class="record-btn idle" id="recBtn" onclick="toggleRecording()">&#127908;</button>
+      <div class="record-status" id="recStatus">Tap to start recording</div>
+      <audio id="audioPlayback" class="audio-player" controls></audio>
+      <button class="btn-analyse" id="analyseBtn" onclick="analyseRecording()" disabled>&#129302; Get AI Feedback</button>
+    </div>
+
+    <div class="feedback-card" id="feedbackCard">
+      <div class="feedback-loading" id="feedbackLoading"><div class="spin"></div><p>AI is reviewing your answer&#8230;</p></div>
+      <div id="feedbackContent" style="display:none"></div>
+    </div>
+
+    <div class="oral-nav-row" id="oralNavRow">${backBtn}<button class="btn-secondary" onclick="oralSkip()">Skip &#8594;</button></div>
+  `;
+}
+
+async function toggleRecording() {
+  if (isRecording) {
+    stopRecording();
+  } else {
+    await startRecording();
+  }
+}
+
+async function startRecording() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioChunks = [];
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+    mediaRecorder.onstop = () => {
+      audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+      const url = URL.createObjectURL(audioBlob);
+      const player = document.getElementById('audioPlayback');
+      player.src = url;
+      player.style.display = 'block';
+      document.getElementById('analyseBtn').disabled = false;
+      document.getElementById('recStatus').textContent = 'Recording saved! Click "Get AI Feedback" below.';
+      stream.getTracks().forEach(t => t.stop());
+    };
+    mediaRecorder.start();
+    isRecording = true;
+    recordSeconds = 0;
+    document.getElementById('recBtn').className = 'record-btn recording';
+    document.getElementById('recBtn').innerHTML = '⏹';
+    document.getElementById('recStatus').textContent = 'Recording... Speak in Hindi now!';
+    recordingTimer = setInterval(() => {
+      recordSeconds++;
+      const m = Math.floor(recordSeconds / 60);
+      const s = recordSeconds % 60;
+      document.getElementById('recTimer').textContent = m + ':' + String(s).padStart(2, '0');
+    }, 1000);
+  } catch(e) {
+    document.getElementById('recStatus').textContent = 'Microphone access denied. Please allow microphone in browser settings.';
+  }
+}
+
+function stopRecording() {
+  if (mediaRecorder && isRecording) {
+    clearInterval(recordingTimer);
+    mediaRecorder.stop();
+    isRecording = false;
+    document.getElementById('recBtn').className = 'record-btn done';
+    document.getElementById('recBtn').innerHTML = '✓';
+  }
+}
+
+async function analyseRecording() {
+  const pic = oralQuestions[oralCurrent];
+  const feedbackCard = document.getElementById('feedbackCard');
+  feedbackCard.className = 'feedback-card show';
+  document.getElementById('feedbackLoading').style.display = 'block';
+  document.getElementById('feedbackContent').style.display = 'none';
+  document.getElementById('analyseBtn').disabled = true;
+
+  const prompt = `You are an experienced PSLE Hindi oral examination teacher giving developmental feedback to a primary school student.
+
+The student has just recorded a spoken Hindi response describing a picture. The picture shows: "${pic.title}" (${pic.year}, ${pic.type === 'sequence' ? 'a 6-panel sequential story illustration' : 'a single scene illustration'}).
+
+Since you cannot hear the audio directly, give constructive and encouraging feedback as if you heard a typical student response for this picture. Be specific, warm, and helpful.
+
+Respond ONLY with valid JSON — no markdown, no code fences, no extra text:
+{"score":<integer 1-20>,"grade":"<Excellent/Good/Satisfactory/Needs Improvement>","pronunciation_feedback":"<1-2 sentences>","content_feedback":"<2-3 sentences on scene coverage>","vocabulary_feedback":"<1-2 sentences>","strengths":["<strength 1>","<strength 2>"],"improvements":["<improvement 1>","<improvement 2>"],"model_answer":"<5-6 sentence model answer in Hindi script>"}`;
+
+  try {
+    // Calls the local CORS proxy (run proxy.py alongside the file server)
+    const response = await fetch('http://localhost:9001/proxy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: prompt })
+    });
+    if (!response.ok) throw new Error('Proxy error ' + response.status);
+    const data = await response.json();
+    const text = (data.content || []).map(i => i.text || '').join('');
+    const clean = text.replace(/```json|```/g, '').trim();
+    const fb = JSON.parse(clean);
+    renderFeedback(fb, pic);
+  } catch(e) {
+    console.error('AI feedback error:', e);
+    document.getElementById('feedbackLoading').innerHTML =
+      '<p style="color:#b91c1c;font-size:13px">&#10060; ' + e.message + '</p>' +
+      '<p style="font-size:12px;color:#666;margin-top:8px">Make sure <strong>proxy.py</strong> is running in Command Prompt.</p>' +
+      '<button class="btn-secondary" style="margin-top:10px" onclick="analyseRecording()">&#8635; Try again</button>';
+    document.getElementById('analyseBtn').disabled = false;
+  }
+}
+
+function renderFeedback(fb, pic) {
+  document.getElementById('feedbackLoading').style.display = 'none';
+  const pct = Math.round((fb.score / 20) * 100);
+  const colour = pct >= 70 ? 'var(--green)' : pct >= 50 ? 'var(--saffron)' : '#ef4444';
+  const strengthsHtml = (fb.strengths || []).map(s => '<span class="strength-tag">&#10003; ' + s + '</span>').join('');
+  const improveHtml = (fb.improvements || []).map(i => '<span class="improve-tag">&#128161; ' + i + '</span>').join('');
+
+  document.getElementById('feedbackContent').innerHTML = `
+    <div class="feedback-header">
+      <div>
+        <div class="feedback-score" style="color:${colour}">${fb.score}<span style="font-size:16px;color:var(--muted)">/20</span></div>
+        <div class="feedback-grade">${fb.grade}</div>
+      </div>
+    </div>
+    <div class="score-bar"><div class="score-fill" style="width:${pct}%"></div></div>
+    <div class="feedback-section">
+      <h5>&#127908; Pronunciation</h5>
+      <p>${fb.pronunciation_feedback}</p>
+    </div>
+    <div class="feedback-section">
+      <h5>&#128218; Content Coverage</h5>
+      <p>${fb.content_feedback}</p>
+    </div>
+    <div class="feedback-section">
+      <h5>&#127775; Vocabulary</h5>
+      <p>${fb.vocabulary_feedback}</p>
+    </div>
+    <div class="feedback-section">
+      <h5>Strengths</h5>
+      <div>${strengthsHtml}</div>
+    </div>
+    <div class="feedback-section">
+      <h5>To Improve</h5>
+      <div>${improveHtml}</div>
+    </div>
+    <div class="feedback-section" style="background:var(--navy-light);padding:14px;border-radius:10px;margin-top:4px">
+      <h5>&#128221; Model Answer (&#2310;&#2342;&#2352;&#2381;&#2358; &#2313;&#2340;&#2381;&#2340;&#2352;)</h5>
+      <p class="hindi" style="line-height:2">${fb.model_answer}</p>
+    </div>
+  `;
+  document.getElementById('feedbackContent').style.display = 'block';
+
+  // Update nav row with proper next button
+  const isLast = oralCurrent === oralQuestions.length - 1;
+  const backBtn = oralCurrent > 0 ? '<button class="btn-secondary" onclick="oralPrev()">&#8592; Back</button>' : '<button class="btn-secondary" disabled>&#8592; Back</button>';
+  document.getElementById('oralNavRow').innerHTML = backBtn +
+    '<button class="btn-primary" onclick="oralNext()">' + (isLast ? 'Finish &#10003;' : 'Next Picture &#8594;') + '</button>';
+}
+
+function oralPrev() { oralCurrent--; renderOralQ(); }
+function oralNext() { oralCurrent++; renderOralQ(); }
+function oralSkip() { oralCurrent++; renderOralQ(); }
+
+function showOralDone() {
+  document.getElementById('oralScreen').style.display = 'none';
+  document.getElementById('doneScreen').style.display = 'block';
+  document.getElementById('doneEmoji').innerHTML = '&#127908;';
+  document.getElementById('doneTitle').textContent = 'Oral Practice Complete!';
+  document.getElementById('doneSub').textContent = 'You practised ' + oralQuestions.length + ' picture descriptions';
+  document.getElementById('doneScore').textContent = '🎤';
+  document.getElementById('doneScoreSub').textContent = 'Keep practising for a higher score!';
+  document.getElementById('doneC').textContent = oralQuestions.length;
+  document.getElementById('doneW').textContent = '—';
+  document.getElementById('doneSK').textContent = '—';
+}
+
+// Hook oral mode into startQuiz
+const _origStart = startQuiz;
+window.startQuiz = function() {
+  if (selectedMode === 'oral') { startOralPractice(); return; }
+  _origStart();
+};
+
+</script></body></html>
