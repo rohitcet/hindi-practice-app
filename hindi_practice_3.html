@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hindi PSLE Practice</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3948463856871959" crossorigin="anonymous"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{--saffron:#FF6B00;--saffron-light:#FFF0E5;--green:#138808;--green-light:#E6F5E6;--green-mid:#B3DDB3;--navy:#000080;--navy-light:#E6E6FF;--bg:#FAFAF8;--card:#FFFFFF;--text:#1A1A2E;--muted:#6B6B80;--border:#E8E8F0;--shadow:0 2px 12px rgba(0,0,0,0.07);--radius:12px;}
@@ -212,8 +213,11 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
 .score-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--saffron),var(--green));transition:width 0.8s ease;}
 .oral-nav-row{display:flex;gap:10px;flex-wrap:wrap;}
 
+.paywall-price{font-size:32px;font-weight:700;color:var(--navy);margin:6px 0 18px;}
+.btn-google{display:inline-flex;align-items:center;gap:10px;padding:11px 22px;border:1.5px solid var(--border);border-radius:9px;font-size:14px;font-weight:500;color:var(--text);background:var(--card);cursor:pointer;margin:0 auto 16px;}
+.btn-google:hover{border-color:var(--navy);background:var(--navy-light);}
 </style>
-<script src="https://accounts.google.com/gsi/client" async defer onload="initGoogleSignIn()"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
 <body>
 <header>
@@ -245,10 +249,22 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
   <div class="login-card">
     <div class="login-logo">&#127981;</div>
     <h2>&#2361;&#2367;&#2306;&#2342;&#2368; &#2309;&#2349;&#2381;&#2351;&#2366;&#2360;</h2>
-    <p>Sign in to track your progress and access all PSLE Hindi practice papers.</p>
-    <div id="googleBtn"></div>
+    <p>Sign in to track your progress and access all PSLE Hindi practice papers.<br>Your first day is free!</p>
+    <button class="btn-google" onclick="signInWithGoogle()">
+      <img src="https://www.google.com/favicon.ico" width="18" height="18">Sign in with Google</button>
     <div class="login-divider">or</div>
     <button class="admin-link" onclick="showAdminModal()">Admin login &#8594;</button>
+  </div>
+</div>
+
+<!-- PAYWALL SCREEN -->
+<div id="paywallScreen" style="display:none">
+  <div class="login-card">
+    <div class="login-logo">&#128274;</div>
+    <h2>Your free day is up!</h2>
+    <p>Unlock lifetime access to all PSLE Hindi practice papers, quizzes and oral practice pictures with a single one-time payment.</p>
+    <button class="btn-primary" style="width:100%;margin-bottom:12px" onclick="buyLifetimeAccess()" id="buyBtn">Unlock Lifetime Access &#8594;</button>
+    <button class="admin-link" onclick="signOut()">Sign out</button>
   </div>
 </div>
 
@@ -264,11 +280,6 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
       <button class="btn-secondary" onclick="closeAdminModal()">Cancel</button>
     </div>
   </div>
-</div>
-
-<!-- SETUP BANNER (shown when client ID not set) -->
-<div id="setupBanner" style="display:none;background:#FFF8E7;border-bottom:1px solid #FFD166;padding:12px 20px;font-size:13px;color:#78350F;text-align:center;">
-  &#9888;&#65039; <strong>Setup needed:</strong> Open the HTML file and replace <code style="background:#FDE68A;padding:1px 6px;border-radius:3px;font-family:monospace">244912988996-an6ml49epsme5lt1adhh4k6hadvma7b6.apps.googleusercontent.com</code> with your actual Google OAuth Client ID to enable Google Sign-In. &nbsp;<button onclick="this.parentElement.style.display='none'" style="background:none;border:none;cursor:pointer;color:#92400E;font-weight:600">&#10005;</button>
 </div>
 
 <main>
@@ -353,11 +364,10 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
     <div class="setup-card">
       <h4>&#9881;&#65039; Google Sign-In Setup (one-time)</h4>
       <ol>
-        <li>Go to <strong>console.cloud.google.com</strong> → create a project</li>
-        <li>APIs &amp; Services → <strong>Credentials</strong> → Create Credentials → OAuth client ID</li>
-        <li>Application type: <strong>Web application</strong></li>
-        <li>Authorised JavaScript origins: add <code>file://</code> "http://localhost"</li>
-        <li>Copy the <strong>Client ID</strong> and paste it in the HTML file replacing <code>244912988996-an6ml49epsme5lt1adhh4k6hadvma7b6.apps.googleusercontent.com</code></li>
+        <li>Go to your <strong>Supabase project → Authentication → Providers → Google</strong></li>
+        <li>Enable it and paste your Google Cloud OAuth Client ID and Client Secret</li>
+        <li>In <strong>console.cloud.google.com</strong>, add authorised redirect URI: your Supabase project URL + <code>/auth/v1/callback</code></li>
+        <li>In Supabase → Authentication → URL Configuration, add your app's URL as a redirect URL</li>
       </ol>
     </div>
     <div class="admin-grid">
@@ -851,9 +861,12 @@ function goHome(){
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 
 // ============================================================
-// CONFIGURATION — PASTE YOUR GOOGLE CLIENT ID BELOW
+// CONFIGURATION
 // ============================================================
-const GOOGLE_CLIENT_ID = '244912988996-an6ml49epsme5lt1adhh4k6hadvma7b6.apps.googleusercontent.com';
+const SUPABASE_URL = 'https://zpdbsitdglrzsqndpgkd.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_ZyvZ_1y9nFs8QW2ue0RcGg_17rJn-ns';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+const TRIAL_MS = 24 * 60 * 60 * 1000; // 1 day free trial
 
 // ADMIN PASSWORD — change this to something secure
 const ADMIN_PASSWORD = 'HindiAdmin2024!';
@@ -861,7 +874,7 @@ const ADMIN_PASSWORD = 'HindiAdmin2024!';
 // ============================================================
 // AUTH STATE
 // ============================================================
-let currentUser = null; // { name, email, picture, googleId }
+let currentUser = null; // { id, name, email, picture }
 let isAdmin = false;
 
 // User activity stored in localStorage
@@ -886,52 +899,42 @@ function recordSession(score, total, year, section) {
 }
 
 // ============================================================
-// GOOGLE SIGN-IN
+// SUPABASE GOOGLE SIGN-IN
 // ============================================================
-function initGoogleSignIn() {
-  if (GOOGLE_CLIENT_ID === 'YOUR_GOOGLE_CLIENT_ID') {
-    document.getElementById('setupBanner').style.display = 'block';
-    // Show a disabled mock button
-    document.getElementById('googleBtn').innerHTML =
-      '<div style="display:inline-flex;align-items:center;gap:10px;padding:10px 20px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;color:#666;cursor:not-allowed;background:#f9f9f9">' +
-      '<img src="https://www.google.com/favicon.ico" width="18" height="18">Sign in with Google (setup needed)</div>';
-    return;
-  }
-  if (window.google && window.google.accounts) {
-    window.google.accounts.id.initialize({
-      client_id: GOOGLE_CLIENT_ID,
-      callback: handleGoogleCredential,
-      auto_select: false,
-      cancel_on_tap_outside: true
-    });
-    window.google.accounts.id.renderButton(
-      document.getElementById('googleBtn'),
-      { theme: 'outline', size: 'large', shape: 'rectangular', width: 280, text: 'signin_with', logo_alignment: 'left' }
-    );
-  } else {
-    setTimeout(initGoogleSignIn, 500);
-  }
+function signInWithGoogle() {
+  sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } });
 }
 
-function handleGoogleCredential(response) {
-  // Decode the JWT (client-side only — no backend verification in this offline app)
-  const payload = JSON.parse(atob(response.credential.split('.')[1]));
+sb.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN' && session) {
+    onSignedIn(session);
+  } else if (event === 'SIGNED_OUT') {
+    resetToLoginScreen();
+  }
+});
+
+async function onSignedIn(session, trialRetries) {
+  const u = session.user;
   currentUser = {
-    name: payload.name,
-    email: payload.email,
-    picture: payload.picture,
-    googleId: payload.sub
+    id: u.id,
+    name: (u.user_metadata && (u.user_metadata.full_name || u.user_metadata.name)) || u.email,
+    email: u.email,
+    picture: u.user_metadata ? u.user_metadata.avatar_url : ''
   };
-  onSignedIn();
-}
 
-function onSignedIn() {
   // Update header user bar
   document.getElementById('userAvatar').src = currentUser.picture || '';
+  document.getElementById('userAvatar').style.display = '';
   document.getElementById('userName').textContent = currentUser.name.split(' ')[0];
   document.getElementById('userBar').style.display = 'flex';
 
-  // Register user in localStorage
+  // Ensure a profile row exists (first login only — ignores duplicates so trial_started_at doesn't reset)
+  await sb.from('profiles').upsert(
+    { id: currentUser.id, email: currentUser.email, name: currentUser.name, avatar_url: currentUser.picture },
+    { onConflict: 'id', ignoreDuplicates: true }
+  );
+
+  // Register user in localStorage (existing local activity tracking, unchanged)
   const users = getStoredUsers();
   if (!users[currentUser.email]) {
     users[currentUser.email] = { name: currentUser.name, email: currentUser.email, picture: currentUser.picture, sessions: [], firstSeen: new Date().toISOString() };
@@ -939,29 +942,72 @@ function onSignedIn() {
   users[currentUser.email].lastSeen = new Date().toISOString();
   saveStoredUsers(users);
 
-  // Show home
-  showScreenAfterLogin();
+  await checkAccessAndShowScreen(trialRetries || 0);
+}
+
+async function checkAccessAndShowScreen(retriesLeft) {
+  const { data: profile } = await sb.from('profiles').select('trial_started_at,is_lifetime').eq('id', currentUser.id).single();
+  const hasAccess = !!profile && (profile.is_lifetime || (Date.now() - new Date(profile.trial_started_at).getTime()) < TRIAL_MS);
+
+  if (hasAccess) {
+    showScreenAfterLogin();
+  } else if (retriesLeft > 0) {
+    // Coming back from Stripe — webhook may take a moment to land, retry briefly
+    setTimeout(() => checkAccessAndShowScreen(retriesLeft - 1), 1500);
+  } else {
+    showPaywallScreen();
+  }
 }
 
 function showScreenAfterLogin() {
   document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('paywallScreen').style.display = 'none';
   document.getElementById('homeScreen').style.display = 'block';
   document.getElementById('homeBtn').style.display = 'none';
 }
 
-function signOut() {
+function showPaywallScreen() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('homeScreen').style.display = 'none';
+  document.getElementById('paywallScreen').style.display = 'flex';
+}
+
+async function buyLifetimeAccess() {
+  const buyBtn = document.getElementById('buyBtn');
+  buyBtn.disabled = true;
+  buyBtn.textContent = 'Redirecting to checkout…';
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const resp = await fetch('/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + session.access_token }
+    });
+    const data = await resp.json();
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      throw new Error(data.error || 'Could not start checkout');
+    }
+  } catch (e) {
+    toast('Checkout error: ' + e.message);
+    buyBtn.disabled = false;
+    buyBtn.textContent = 'Unlock Lifetime Access →';
+  }
+}
+
+function resetToLoginScreen() {
   currentUser = null;
   document.getElementById('userBar').style.display = 'none';
   document.getElementById('headerScore').style.display = 'none';
   document.getElementById('homeBtn').style.display = 'none';
-  // Hide all screens
-  ['homeScreen','quizScreen','doneScreen','adminScreen'].forEach(id => {
+  ['homeScreen','quizScreen','doneScreen','adminScreen','paywallScreen'].forEach(id => {
     document.getElementById(id).style.display = 'none';
   });
   document.getElementById('loginScreen').style.display = 'flex';
-  if (window.google && window.google.accounts && GOOGLE_CLIENT_ID !== 'YOUR_GOOGLE_CLIENT_ID') {
-    window.google.accounts.id.disableAutoSelect();
-  }
+}
+
+function signOut() {
+  sb.auth.signOut();
 }
 
 // ============================================================
@@ -1060,10 +1106,18 @@ window.showDone = function() {
 // ============================================================
 // STARTUP
 // ============================================================
-document.addEventListener('DOMContentLoaded', function() {
-  // Hide all main screens, show login
+document.addEventListener('DOMContentLoaded', async function() {
+  // Hide all main screens, show login by default
   document.getElementById('homeScreen').style.display = 'none';
   document.getElementById('loginScreen').style.display = 'flex';
+
+  const cameFromCheckout = new URLSearchParams(window.location.search).get('checkout') === 'success';
+  if (cameFromCheckout) history.replaceState(null, '', window.location.pathname);
+
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    await onSignedIn(session, cameFromCheckout ? 3 : 0);
+  }
 });
 
 
@@ -1166,12 +1220,12 @@ function renderOralQ() {
       <button class="record-btn idle" id="recBtn" onclick="toggleRecording()">&#127908;</button>
       <div class="record-status" id="recStatus">Tap to start recording</div>
       <audio id="audioPlayback" class="audio-player" controls></audio>
-      <button class="btn-analyse" id="analyseBtn" onclick="analyseRecording()" disabled>&#129302; Get AI Feedback</button>
+      <a class="btn-analyse" id="downloadBtn" style="display:none;text-decoration:none;text-align:center" download="hindi_oral_practice.webm">&#11015;&#65039; Download Recording</a>
+      <button class="btn-secondary" id="emailBtn" style="width:100%;margin-top:10px;display:none" onclick="emailForFeedback()">&#128231; Get Expert Feedback by Email</button>
     </div>
 
     <div class="feedback-card" id="feedbackCard">
-      <div class="feedback-loading" id="feedbackLoading"><div class="spin"></div><p>AI is reviewing your answer…</p></div>
-      <div id="feedbackContent" style="display:none"></div>
+      <div id="feedbackContent"></div>
     </div>
 
     <div class="oral-nav-row" id="oralNavRow">${backBtn}<button class="btn-secondary" onclick="oralSkip()">Skip &#8594;</button></div>
@@ -1198,8 +1252,11 @@ async function startRecording() {
       const player = document.getElementById('audioPlayback');
       player.src = url;
       player.style.display = 'block';
-      document.getElementById('analyseBtn').disabled = false;
-      document.getElementById('recStatus').textContent = 'Recording saved! Click "Get AI Feedback" below.';
+      const downloadBtn = document.getElementById('downloadBtn');
+      downloadBtn.href = url;
+      downloadBtn.style.display = 'block';
+      document.getElementById('emailBtn').style.display = 'block';
+      document.getElementById('recStatus').textContent = 'Recording saved! Download it, then send it in for expert feedback.';
       stream.getTracks().forEach(t => t.stop());
     };
     mediaRecorder.start();
@@ -1229,89 +1286,22 @@ function stopRecording() {
   }
 }
 
-async function analyseRecording() {
-  const pic = oralQuestions[oralCurrent];
+const SUPPORT_EMAIL = 'hindipractice.psle@gmail.com';
+
+function emailForFeedback() {
+  const subject = encodeURIComponent('Oral practice feedback request — Picture ' + (oralCurrent + 1));
+  const body = encodeURIComponent(
+    'Hi,\n\nPlease find my Hindi oral practice recording attached for expert feedback.\n\n' +
+    'Picture: ' + (oralCurrent + 1) + ' of ' + oralQuestions.length + '\n\n' +
+    '(Please attach the file you just downloaded before sending this email.)\n\nThanks!'
+  );
+  window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`;
+
   const feedbackCard = document.getElementById('feedbackCard');
   feedbackCard.className = 'feedback-card show';
-  document.getElementById('feedbackLoading').style.display = 'block';
-  document.getElementById('feedbackContent').style.display = 'none';
-  document.getElementById('analyseBtn').disabled = true;
-
-  const prompt = `You are an experienced PSLE Hindi oral examination teacher giving developmental feedback to a primary school student.
-
-The student has just recorded a 1-2 minute spoken Hindi response describing picture number ${oralCurrent + 1} from a PSLE Hindi oral practice set.
-
-Give constructive and encouraging feedback as if you heard a typical student response. Be specific, warm, and helpful.
-
-Respond ONLY with valid JSON — no markdown, no code fences, no extra text:
-{"score":<integer 1-20>,"grade":"<Excellent/Good/Satisfactory/Needs Improvement>","pronunciation_feedback":"<1-2 sentences>","content_feedback":"<2-3 sentences on scene coverage>","vocabulary_feedback":"<1-2 sentences>","strengths":["<strength 1>","<strength 2>"],"improvements":["<improvement 1>","<improvement 2>"],"model_answer":"<4-5 sentence model answer in Hindi script>"}`;
-
-  try {
-    const response = await fetch('/proxy', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt })
-    });
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error('Status ' + response.status + ': ' + errText.slice(0, 200));
-    }
-    const data = await response.json();
-    const text = data.content.map(i => i.text || '').join('');
-    const clean = text.replace(/```json|```/g, '').trim();
-    const fb = JSON.parse(clean);
-    renderFeedback(fb, pic);
-  } catch(e) {
-    console.error('AI feedback error:', e);
-    document.getElementById('feedbackLoading').innerHTML =
-      '<p style="color:#b91c1c;font-size:14px">&#10060; Could not get AI feedback.<br>' +
-      '<small style="color:#999">' + e.message + '</small></p>' +
-      '<button class="btn-secondary" style="margin-top:12px" onclick="analyseRecording()">&#8635; Try again</button>';
-    document.getElementById('analyseBtn').disabled = false;
-  }
-}
-
-function renderFeedback(fb, pic) {
-  document.getElementById('feedbackLoading').style.display = 'none';
-  const pct = Math.round((fb.score / 20) * 100);
-  const colour = pct >= 70 ? 'var(--green)' : pct >= 50 ? 'var(--saffron)' : '#ef4444';
-  const strengthsHtml = (fb.strengths || []).map(s => '<span class="strength-tag">&#10003; ' + s + '</span>').join('');
-  const improveHtml = (fb.improvements || []).map(i => '<span class="improve-tag">&#128161; ' + i + '</span>').join('');
-
-  document.getElementById('feedbackContent').innerHTML = `
-    <div class="feedback-header">
-      <div>
-        <div class="feedback-score" style="color:${colour}">${fb.score}<span style="font-size:16px;color:var(--muted)">/20</span></div>
-        <div class="feedback-grade">${fb.grade}</div>
-      </div>
-    </div>
-    <div class="score-bar"><div class="score-fill" style="width:${pct}%"></div></div>
-    <div class="feedback-section">
-      <h5>&#127908; Pronunciation</h5>
-      <p>${fb.pronunciation_feedback}</p>
-    </div>
-    <div class="feedback-section">
-      <h5>&#128218; Content Coverage</h5>
-      <p>${fb.content_feedback}</p>
-    </div>
-    <div class="feedback-section">
-      <h5>&#127775; Vocabulary</h5>
-      <p>${fb.vocabulary_feedback}</p>
-    </div>
-    <div class="feedback-section">
-      <h5>Strengths</h5>
-      <div>${strengthsHtml}</div>
-    </div>
-    <div class="feedback-section">
-      <h5>To Improve</h5>
-      <div>${improveHtml}</div>
-    </div>
-    <div class="feedback-section" style="background:var(--navy-light);padding:14px;border-radius:10px;margin-top:4px">
-      <h5>&#128221; Model Answer (&#2310;&#2342;&#2352;&#2381;&#2358; &#2313;&#2340;&#2381;&#2340;&#2352;)</h5>
-      <p class="hindi" style="line-height:2">${fb.model_answer}</p>
-    </div>
-  `;
-  document.getElementById('feedbackContent').style.display = 'block';
+  document.getElementById('feedbackContent').innerHTML =
+    '<p style="font-size:14px;line-height:1.7">&#9993;&#65039; Your email app should now be open. Attach the recording you downloaded and send it to ' +
+    '<strong>' + SUPPORT_EMAIL + '</strong> — we\'ll get back to you with personalised feedback.</p>';
 
   // Update nav row with proper next button
   const isLast = oralCurrent === oralQuestions.length - 1;
