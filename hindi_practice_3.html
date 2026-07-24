@@ -13,6 +13,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .hindi{font-family:'Noto Sans Devanagari',sans-serif;}
 header{background:var(--navy);color:white;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,128,0.2);}
 .header-inner{max-width:900px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:12px;}
+.header-icon{width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid rgba(255,255,255,0.35);}
 .flag-stripe{display:flex;flex-direction:column;gap:2px;width:22px;flex-shrink:0;}
 .flag-stripe span{display:block;height:4px;border-radius:1px;}
 .s1{background:#FF9933;}.s2{background:white;}.s3{background:#138808;}
@@ -21,6 +22,7 @@ header{background:var(--navy);color:white;position:sticky;top:0;z-index:100;box-
 .header-title p{font-size:11px;color:rgba(255,255,255,0.5);margin-top:1px;}
 .btn-home{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);color:white;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.12s;flex-shrink:0;}
 .btn-home:hover{background:rgba(255,255,255,0.22);}
+.practice-timer{display:flex;align-items:center;padding:6px 12px;border-radius:999px;background:rgba(255,209,102,0.15);border:1px solid #FFD166;color:#FFD166;font-size:12px;font-weight:600;flex-shrink:0;}
 .score-pill{display:flex;gap:10px;align-items:center;}
 .score-item{text-align:center;}
 .score-item .num{font-size:18px;font-weight:600;line-height:1;}
@@ -60,6 +62,8 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
 .tag{padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:0.4px;text-transform:uppercase;}
 .tag-year{background:var(--navy-light);color:var(--navy);}
 .tag-section{background:var(--saffron-light);color:var(--saffron);}
+.tag-timer{background:var(--navy-light);color:var(--navy);margin-left:auto;}
+.tag-timer.tag-timer-warn{background:#FEE2E2;color:#b91c1c;}
 .passage-card{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--saffron);border-radius:var(--radius);padding:16px 18px;margin-bottom:16px;font-size:15px;line-height:1.9;}
 .blank-hl{background:var(--saffron-light);color:var(--saffron);padding:1px 5px;border-radius:4px;font-weight:600;}
 .q-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;box-shadow:var(--shadow);}
@@ -124,6 +128,19 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
 .trial-banner p{font-size:13px;color:#92400E;font-weight:500;}
 .pricing-list{text-align:left;font-size:13px;color:var(--text);line-height:2;margin:14px 0;padding-left:4px;}
 .pricing-price{font-size:28px;font-weight:700;color:var(--navy);margin:10px 0;}
+.side-banner{display:none;}
+@media (min-width:1400px){
+  .side-banner{
+    display:flex;flex-direction:column;align-items:center;gap:10px;
+    position:fixed;top:100px;right:24px;width:190px;
+    background:var(--card);border:3px solid var(--saffron);border-radius:20px;
+    padding:12px 12px 16px;box-shadow:var(--shadow);text-align:center;z-index:50;
+  }
+  .side-banner .flag-stripe{flex-direction:row;width:100%;height:6px;gap:0;margin-bottom:2px;}
+  .side-banner .flag-stripe span{flex:1;height:100%;border-radius:0;}
+  .side-banner img{width:100%;height:auto;border-radius:12px;display:block;}
+  .side-banner p{font-size:16px;font-weight:700;color:var(--navy);line-height:1.4;margin:0;}
+}
 /* ADMIN MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;}
 .modal-box{background:var(--card);border-radius:16px;padding:32px;max-width:420px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,0.2);}
@@ -228,12 +245,13 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
 <body>
 <header>
   <div class="header-inner">
-    <div class="flag-stripe"><span class="s1"></span><span class="s2"></span><span class="s3"></span></div>
+    <img class="header-icon" src="/images/kiddos_banner.jpg" alt="Hindi Practice">
     <div class="header-title">
       <h1>&#2361;&#2367;&#2306;&#2342;&#2368; &#2309;&#2349;&#2381;&#2351;&#2366;&#2360; &nbsp;&#183;&nbsp; Hindi Practice</h1>
-      <p>PSLE Mock Papers 2012&#8211;2024</p>
+      <p>PSLE Mock Test</p>
     </div>
     <button class="btn-home" onclick="goHome()" id="homeBtn" style="display:none">&#8962; Home</button>
+    <div class="practice-timer" id="practiceSetTimer" style="display:none"><span id="practiceSetTimerText"></span></div>
     <div class="score-pill" id="headerScore" style="display:none">
       <div class="score-item s-correct"><div class="num" id="hCorrect">0</div><div class="lbl">Right</div></div>
       <div class="score-div"></div>
@@ -258,7 +276,7 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
     <h2>&#2361;&#2367;&#2306;&#2342;&#2368; &#2309;&#2349;&#2381;&#2351;&#2366;&#2360;</h2>
     <div class="pricing-list">
       &#9989; Sign in free with Google<br>
-      &#9989; 1 day full access &mdash; no card needed<br>
+      &#9989; 50 minutes full access &mdash; no card needed<br>
       &#9989; Then unlock lifetime access for <strong id="loginPriceText">&hellip;</strong>
     </div>
     <button class="btn-google" onclick="signInWithGoogle()">
@@ -272,7 +290,7 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
 <div id="paywallScreen" style="display:none">
   <div class="login-card">
     <div class="login-logo">&#128274;</div>
-    <h2>Your free day is up!</h2>
+    <h2>Your free trial is up!</h2>
     <p>Unlock lifetime access to all PSLE Hindi practice papers, quizzes and oral practice pictures with a single one-time payment of <strong id="paywallPriceText">&hellip;</strong>.</p>
     <button class="btn-primary" style="width:100%;margin-bottom:12px" onclick="buyLifetimeAccess()" id="buyBtn">Unlock Lifetime Access &#8594;</button>
     <button class="admin-link" onclick="signOut()">Sign out</button>
@@ -313,6 +331,11 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
 
 <main>
   <div id="homeScreen">
+    <aside class="side-banner">
+      <div class="flag-stripe"><span class="s1"></span><span class="s2"></span><span class="s3"></span></div>
+      <img src="/images/kiddos_banner.jpg" alt="All the best, Kiddos!">
+      <p class="hindi">All the best,<br>Kiddos! &#127775;&#127881;</p>
+    </aside>
     <div class="trial-banner" id="trialBanner">
       <p id="trialBannerText"></p>
       <button class="btn-upgrade" style="background:var(--navy);border-color:var(--navy)" onclick="openPricingModal()">Upgrade &#8594;</button>
@@ -335,8 +358,9 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
       <div class="mode-card" onclick="selectMode(this,'cloze')"><div class="icon">&#128214;</div><h3>Cloze comprehension</h3><p>Read passages, fill missing words (A3)</p><div class="check">&#10003;</div></div>
       <div class="mode-card" onclick="selectMode(this,'comprehension')"><div class="icon">&#128269;</div><h3>Comprehension</h3><p>Read stories, answer MCQ (A4)</p><div class="check">&#10003;</div></div>
       
-      <div class="mode-card" onclick="selectMode(this,'oral')"><div class="icon">🎤</div><h3>Oral practice</h3><p>Describe pictures aloud — AI gives instant feedback (A4 oral)</p><div class="check">&#10003;</div></div>
+      <div class="mode-card" onclick="selectMode(this,'oral')"><div class="icon">🎤</div><h3>Oral practice</h3><p>Describe pictures aloud, up to 5 minutes each — get expert feedback by email (A4 oral)</p><div class="check">&#10003;</div></div>
       <div class="mode-card" onclick="selectMode(this,'vocabulary')"><div class="icon">&#11088;</div><h3>Vocabulary</h3><p>Synonyms &amp; word meanings</p><div class="check">&#10003;</div></div>
+      <div class="mode-card" onclick="selectMode(this,'practiceset')"><div class="icon">&#127919;</div><h3>Practice Set</h3><p>Timed mix: 5 language, 2 cloze, 5 vocabulary + 1 oral, from all collections</p><div class="check">&#10003;</div></div>
     </div>
     <p class="section-title">Select collection</p>
     <div class="year-grid" id="yearGrid">
@@ -775,6 +799,127 @@ const YEAR_TO_COLLECTION={'2012':1,'2013':2,'2014':3,'2015':4,'2016':5,'2017':6,
 let selectedMode='all',selectedYears=['all'],questions=[],current=0;
 let answered=false,correct=0,wrong=0,answers={};
 
+// ============================================================
+// PER-QUESTION TIMERS
+// ============================================================
+const SECTION_TIME_LIMITS = { languageuse:120, clozecomprehension:180, comprehension:180, vocabulary:60 };
+function getSectionTimeLimit(section){
+  const st = section.toLowerCase().replace(/[^a-z]/g,'');
+  if (st.includes('cloze')) return SECTION_TIME_LIMITS.clozecomprehension;
+  if (st.includes('language')) return SECTION_TIME_LIMITS.languageuse;
+  if (st.includes('vocabulary')) return SECTION_TIME_LIMITS.vocabulary;
+  if (st.includes('comprehension')) return SECTION_TIME_LIMITS.comprehension;
+  return 120;
+}
+let questionTimerInterval = null, questionTimeLeft = 0;
+function clearQuestionTimer(){ clearInterval(questionTimerInterval); questionTimerInterval = null; }
+function startQuestionTimer(q){
+  clearQuestionTimer();
+  questionTimeLeft = getSectionTimeLimit(q.section);
+  updateQuestionTimerDisplay();
+  questionTimerInterval = setInterval(() => {
+    questionTimeLeft--;
+    updateQuestionTimerDisplay();
+    if (questionTimeLeft <= 0) {
+      clearQuestionTimer();
+      if (!answered) { toast("⏱ Time's up!"); skipQ(); }
+    }
+  }, 1000);
+}
+function updateQuestionTimerDisplay(){
+  const el = document.getElementById('qTimer');
+  if (!el) return;
+  const m = Math.floor(Math.max(0,questionTimeLeft)/60), s = Math.max(0,questionTimeLeft)%60;
+  el.textContent = '⏱ ' + m + ':' + String(s).padStart(2,'0');
+  el.classList.toggle('tag-timer-warn', questionTimeLeft <= 10);
+}
+
+// ============================================================
+// PRACTICE SET MODE
+// ============================================================
+let practiceSetActive = false, practiceSetOralPic = null;
+let practiceSetInterval = null, practiceSetOverallSeconds = 0;
+function clearPracticeSetTimer(){ clearInterval(practiceSetInterval); practiceSetInterval = null; }
+function updatePracticeSetTimerDisplay(){
+  const el = document.getElementById('practiceSetTimerText');
+  if (!el) return;
+  const m = Math.floor(Math.max(0,practiceSetOverallSeconds)/60), s = Math.max(0,practiceSetOverallSeconds)%60;
+  el.textContent = 'Practice Set: ' + m + ':' + String(s).padStart(2,'0') + ' left';
+}
+function startPracticeSetTimer(totalSeconds){
+  clearPracticeSetTimer();
+  practiceSetOverallSeconds = totalSeconds;
+  document.getElementById('practiceSetTimer').style.display = 'flex';
+  updatePracticeSetTimerDisplay();
+  practiceSetInterval = setInterval(() => {
+    practiceSetOverallSeconds--;
+    updatePracticeSetTimerDisplay();
+    if (practiceSetOverallSeconds <= 0) {
+      clearPracticeSetTimer();
+      finishPracticeSet(true);
+    }
+  }, 1000);
+}
+function buildPracticeSetQuestions(){
+  const buckets = { languageuse: [], clozecomprehension: [], vocabulary: [] };
+  Object.entries(DB).forEach(([yr, sections]) => {
+    Object.entries(sections).forEach(([sec, data]) => {
+      const st = sec.toLowerCase().replace(/[^a-z]/g,'');
+      const items = data.questions.map(q => ({year:yr, section:sec, passage:data.passage, ...q}));
+      if (st.includes('cloze')) buckets.clozecomprehension.push(...items);
+      else if (st.includes('language')) buckets.languageuse.push(...items);
+      else if (st.includes('vocabulary')) buckets.vocabulary.push(...items);
+    });
+  });
+  const pick = (arr,n) => shuf(arr).slice(0, Math.min(n, arr.length));
+  return shuf([...pick(buckets.languageuse,5), ...pick(buckets.clozecomprehension,2), ...pick(buckets.vocabulary,5)]);
+}
+function startPracticeSet(){
+  const mcq = buildPracticeSetQuestions();
+  if (!mcq.length) { toast('Not enough questions available.'); return; }
+  practiceSetActive = true;
+  practiceSetOralPic = shuf(ORAL_PICTURES)[0];
+  questions = mcq;
+  current=0; correct=0; wrong=0; answered=false; answers={};
+  updH();
+  document.getElementById('homeScreen').style.display='none';
+  document.getElementById('doneScreen').style.display='none';
+  document.getElementById('quizScreen').style.display='block';
+  document.getElementById('headerScore').style.display='flex';
+  document.getElementById('homeBtn').style.display='flex';
+  const totalSeconds = mcq.reduce((sum,q)=>sum+getSectionTimeLimit(q.section),0) + 300;
+  startPracticeSetTimer(totalSeconds);
+  renderQ();
+}
+function startPracticeSetOralPhase(){
+  oralQuestions = [practiceSetOralPic];
+  oralCurrent = 0;
+  document.getElementById('quizScreen').style.display='none';
+  document.getElementById('oralScreen').style.display='block';
+  renderOralQ();
+}
+function finishPracticeSet(timedOut){
+  clearPracticeSetTimer();
+  clearQuestionTimer();
+  if (typeof isRecording !== 'undefined' && isRecording) stopRecording();
+  practiceSetActive = false;
+  document.getElementById('practiceSetTimer').style.display = 'none';
+  document.getElementById('quizScreen').style.display = 'none';
+  document.getElementById('oralScreen').style.display = 'none';
+  document.getElementById('doneScreen').style.display = 'block';
+  const tot = questions.length;
+  const sk = Object.values(answers).filter(a=>a.skipped).length;
+  const pct = tot ? Math.round((correct/tot)*100) : 0;
+  document.getElementById('doneEmoji').innerHTML = '🎯';
+  document.getElementById('doneTitle').textContent = timedOut ? "Time's up — Practice Set complete!" : 'Practice Set complete!';
+  document.getElementById('doneSub').textContent = 'You completed ' + Math.min(current,tot) + ' of ' + tot + ' questions + 1 oral picture';
+  document.getElementById('doneScore').textContent = pct + '%';
+  document.getElementById('doneScoreSub').textContent = correct + ' correct out of ' + tot;
+  document.getElementById('doneC').textContent = correct;
+  document.getElementById('doneW').textContent = wrong;
+  document.getElementById('doneSK').textContent = sk;
+}
+
 function selectMode(el,mode){document.querySelectorAll('.mode-card').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');selectedMode=mode;}
 function toggleYear(el,year){
   if(year==='all'){document.querySelectorAll('.year-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');selectedYears=['all'];}
@@ -819,7 +964,10 @@ function updH(){
   document.getElementById('hTotal').textContent=current;
 }
 function renderQ(){
-  if(current>=questions.length){showDone();return;}
+  if(current>=questions.length){
+    if (practiceSetActive) { startPracticeSetOralPhase(); return; }
+    showDone();return;
+  }
   const q=questions[current];const prev=answers[current];answered=!!prev;
   const pct=Math.round((current/questions.length)*100);
   document.getElementById('progText').textContent='Question '+(current+1)+' of '+questions.length;
@@ -841,13 +989,15 @@ function renderQ(){
   const bk=current>0?'<button class="btn-secondary" onclick="prevQ()">&#8592; Back</button>':'<button class="btn-secondary" disabled>&#8592; Back</button>';
   const nx=prev!==undefined?'<button class="btn-primary" onclick="nextQ()">'+(isL?'Finish &#10003;':'Next &#8594;')+'</button>':'<button class="btn-secondary" onclick="skipQ()">'+(isL?'Finish &#8594;':'Skip &#8594;')+'</button>';
   document.getElementById('quizContent').innerHTML=
-    '<div class="q-meta"><span class="tag tag-year">Collection '+(YEAR_TO_COLLECTION[q.year]||q.year)+'</span><span class="tag tag-section">'+q.section+'</span></div>'+
+    '<div class="q-meta"><span class="tag tag-year">Collection '+(YEAR_TO_COLLECTION[q.year]||q.year)+'</span><span class="tag tag-section">'+q.section+'</span><span class="tag tag-timer" id="qTimer"></span></div>'+
     '<div class="passage-card hindi">'+fmtP(q.passage)+'</div>'+
     '<div class="q-card"><div class="q-number">Question '+(current+1)+'</div><div class="q-text hindi">'+q.q+'</div><div class="options">'+opH+'</div>'+fbH+'<div class="btn-row" id="btnRow">'+bk+nx+'</div></div>';
+  if (prev === undefined) { startQuestionTimer(q); } else { clearQuestionTimer(); }
 }
 function fmtP(p){return p.replace(/\[(\d+)\]/g,'<span class="blank-hl">___$1___</span>');}
 function selOpt(i){
   if(answered)return;answered=true;
+  clearQuestionTimer();
   const q=questions[current];const isC=i===q.ans;
   if(answers[current]===undefined){if(isC)correct++;else wrong++;updH();}
   answers[current]={chosen:i,isCorrect:isC};
@@ -868,6 +1018,7 @@ function skipQ(){
 }
 function nextQ(){current++;updH();renderQ();}
 function showDone(){
+  clearQuestionTimer();
   document.getElementById('quizScreen').style.display='none';
   document.getElementById('doneScreen').style.display='block';
   const tot=questions.length;const sk=Object.values(answers).filter(a=>a.skipped).length;
@@ -885,6 +1036,10 @@ function showDone(){
 }
 function restartQuiz(){document.getElementById('doneScreen').style.display='none';startQuiz();}
 function goHome(){
+  clearQuestionTimer();
+  clearPracticeSetTimer();
+  practiceSetActive = false;
+  document.getElementById('practiceSetTimer').style.display = 'none';
   document.getElementById('doneScreen').style.display='none';
   document.getElementById('quizScreen').style.display='none';
   document.getElementById('oralScreen').style.display='none';
@@ -900,7 +1055,7 @@ function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t
 const SUPABASE_URL = 'https://zpdbsitdglrzsqndpgkd.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_ZyvZ_1y9nFs8QW2ue0RcGg_17rJn-ns';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-const TRIAL_MS = 24 * 60 * 60 * 1000; // 1 day free trial
+const TRIAL_MS = 50 * 60 * 1000; // 50 minute free trial
 
 // ADMIN PASSWORD — change this to something secure
 const ADMIN_PASSWORD = 'HindiAdmin2024!';
@@ -988,10 +1143,12 @@ async function checkAccessAndShowScreen(retriesLeft) {
 
   if (hasAccess) {
     showScreenAfterLogin();
+    if (!profile.is_lifetime) startTrialWatch(); else clearInterval(trialWatchInterval);
   } else if (retriesLeft > 0) {
     // Coming back from Stripe — webhook may take a moment to land, retry briefly
     setTimeout(() => checkAccessAndShowScreen(retriesLeft - 1), 1500);
   } else {
+    clearInterval(trialWatchInterval);
     showPaywallScreen();
   }
   updateUpgradeUI();
@@ -1043,11 +1200,37 @@ function updateUpgradeUI() {
     banner.style.display = 'none';
     return;
   }
-  const hoursLeft = Math.max(1, Math.ceil(msLeft / 3600000));
+  const totalSeconds = Math.ceil(msLeft / 1000);
+  const m = Math.floor(totalSeconds / 60), s = totalSeconds % 60;
   pill.style.display = 'inline-flex';
   banner.style.display = 'flex';
   document.getElementById('trialBannerText').textContent =
-    '⏳ ' + hoursLeft + ' hour' + (hoursLeft === 1 ? '' : 's') + ' left in your free trial.';
+    '⏳ ' + m + ':' + String(s).padStart(2,'0') + ' left in your free trial.';
+}
+
+// ============================================================
+// TRIAL EXPIRY WATCHDOG — 50 min is short enough that a single
+// browsing session can outlast it, so keep checking while active.
+// ============================================================
+let trialWatchInterval = null;
+function startTrialWatch(){
+  clearInterval(trialWatchInterval);
+  trialWatchInterval = setInterval(() => {
+    if (!currentProfile || currentProfile.is_lifetime) { clearInterval(trialWatchInterval); return; }
+    updateUpgradeUI();
+    const msLeft = TRIAL_MS - (Date.now() - new Date(currentProfile.trial_started_at).getTime());
+    if (msLeft <= 0) { clearInterval(trialWatchInterval); forceExpireToPaywall(); }
+  }, 1000);
+}
+function forceExpireToPaywall(){
+  clearQuestionTimer();
+  clearPracticeSetTimer();
+  practiceSetActive = false;
+  document.getElementById('practiceSetTimer').style.display = 'none';
+  ['homeScreen','quizScreen','doneScreen','oralScreen'].forEach(id => document.getElementById(id).style.display = 'none');
+  document.getElementById('headerScore').style.display = 'none';
+  document.getElementById('homeBtn').style.display = 'none';
+  showPaywallScreen();
 }
 
 async function openPricingModal() {
@@ -1085,11 +1268,12 @@ async function buyLifetimeAccess() {
 function resetToLoginScreen() {
   currentUser = null;
   currentProfile = null;
+  clearInterval(trialWatchInterval);
   updateUpgradeUI();
   document.getElementById('userBar').style.display = 'none';
   document.getElementById('headerScore').style.display = 'none';
   document.getElementById('homeBtn').style.display = 'none';
-  ['homeScreen','quizScreen','doneScreen','adminScreen','paywallScreen'].forEach(id => {
+  ['homeScreen','quizScreen','doneScreen','oralScreen','adminScreen','paywallScreen'].forEach(id => {
     document.getElementById(id).style.display = 'none';
   });
   document.getElementById('loginScreen').style.display = 'flex';
@@ -1138,7 +1322,7 @@ function adminLogout() {
   document.getElementById('loginScreen').style.display = 'flex';
 }
 function showAdminDashboard() {
-  ['homeScreen','quizScreen','doneScreen'].forEach(id => document.getElementById(id).style.display = 'none');
+  ['homeScreen','quizScreen','doneScreen','oralScreen'].forEach(id => document.getElementById(id).style.display = 'none');
   document.getElementById('adminScreen').style.display = 'block';
   refreshAdminData();
 }
@@ -1309,7 +1493,7 @@ function renderOralQ() {
     <div style="background:var(--card);border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:var(--shadow);border:1px solid var(--border)">
       <h4 style="font-size:15px;font-weight:600;margin-bottom:5px">&#127908; अपना उत्तर रिकॉर्ड करें</h4>
       <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Speak clearly in Hindi for 1–2 minutes describing the picture above.</p>
-      <div class="record-timer" id="recTimer">0:00</div>
+      <div class="record-timer" id="recTimer">0:00 / 5:00</div>
       <button class="record-btn idle" id="recBtn" onclick="toggleRecording()">&#127908;</button>
       <div class="record-status" id="recStatus">Tap to start recording</div>
       <audio id="audioPlayback" class="audio-player" controls></audio>
@@ -1362,7 +1546,8 @@ async function startRecording() {
       recordSeconds++;
       const m = Math.floor(recordSeconds / 60);
       const s = recordSeconds % 60;
-      document.getElementById('recTimer').textContent = m + ':' + String(s).padStart(2, '0');
+      document.getElementById('recTimer').textContent = m + ':' + String(s).padStart(2, '0') + ' / 5:00';
+      if (recordSeconds >= 300) { stopRecording(); }
     }, 1000);
   } catch(e) {
     document.getElementById('recStatus').textContent = 'Microphone access denied. Please allow microphone in browser settings.';
@@ -1409,6 +1594,7 @@ function oralSkip() { oralCurrent++; renderOralQ(); }
 
 function showOralDone() {
   document.getElementById('oralScreen').style.display = 'none';
+  if (practiceSetActive) { finishPracticeSet(false); return; }
   document.getElementById('doneScreen').style.display = 'block';
   document.getElementById('doneEmoji').innerHTML = '&#127908;';
   document.getElementById('doneTitle').textContent = 'Oral Practice Complete!';
@@ -1424,6 +1610,7 @@ function showOralDone() {
 const _origStart = startQuiz;
 window.startQuiz = function() {
   if (selectedMode === 'oral') { startOralPractice(); return; }
+  if (selectedMode === 'practiceset') { startPracticeSet(); return; }
   _origStart();
 };
 
