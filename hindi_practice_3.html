@@ -1552,32 +1552,55 @@ function renderOralQ() {
 
 async function toggleRecording() {
   if (isRecording) {
-    stopRecording();
+    await stopRecording();
   } else {
     await startRecording();
   }
 }
 
+function base64ToBlob(base64, mimeType) {
+  const byteChars = atob(base64);
+  const byteNumbers = new Array(byteChars.length);
+  for (let i = 0; i < byteChars.length; i++) byteNumbers[i] = byteChars.charCodeAt(i);
+  return new Blob([new Uint8Array(byteNumbers)], { type: mimeType });
+}
+
+function onRecordingSaved(blob) {
+  audioBlob = blob;
+  const url = URL.createObjectURL(blob);
+  const player = document.getElementById('audioPlayback');
+  player.src = url;
+  player.style.display = 'block';
+  const downloadBtn = document.getElementById('downloadBtn');
+  downloadBtn.href = url;
+  downloadBtn.style.display = 'block';
+  document.getElementById('emailBtn').style.display = 'block';
+  document.getElementById('recStatus').textContent = 'Recording saved! Download it, then send it in for expert feedback.';
+}
+
 async function startRecording() {
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    audioChunks = [];
-    mediaRecorder = new MediaRecorder(stream);
-    mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
-    mediaRecorder.onstop = () => {
-      audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-      const url = URL.createObjectURL(audioBlob);
-      const player = document.getElementById('audioPlayback');
-      player.src = url;
-      player.style.display = 'block';
-      const downloadBtn = document.getElementById('downloadBtn');
-      downloadBtn.href = url;
-      downloadBtn.style.display = 'block';
-      document.getElementById('emailBtn').style.display = 'block';
-      document.getElementById('recStatus').textContent = 'Recording saved! Download it, then send it in for expert feedback.';
-      stream.getTracks().forEach(t => t.stop());
-    };
-    mediaRecorder.start();
+    if (isNative()) {
+      // Android WebView's own getUserMedia is unreliable for audio capture on many devices
+      // (fails with NotReadableError even when permission is granted) — use a native plugin instead.
+      const VoiceRecorder = window.Capacitor.Plugins.VoiceRecorder;
+      const perm = await VoiceRecorder.hasAudioRecordingPermission();
+      if (!perm.value) {
+        const req = await VoiceRecorder.requestAudioRecordingPermission();
+        if (!req.value) throw new Error('Microphone permission was not granted.');
+      }
+      await VoiceRecorder.startRecording();
+    } else {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunks = [];
+      mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+      mediaRecorder.onstop = () => {
+        onRecordingSaved(new Blob(audioChunks, { type: 'audio/webm' }));
+        stream.getTracks().forEach(t => t.stop());
+      };
+      mediaRecorder.start();
+    }
     isRecording = true;
     recordSeconds = 0;
     document.getElementById('recBtn').className = 'record-btn recording';
@@ -1595,13 +1618,21 @@ async function startRecording() {
   }
 }
 
-function stopRecording() {
-  if (mediaRecorder && isRecording) {
-    clearInterval(recordingTimer);
+async function stopRecording() {
+  if (!isRecording) return;
+  clearInterval(recordingTimer);
+  isRecording = false;
+  document.getElementById('recBtn').className = 'record-btn done';
+  document.getElementById('recBtn').innerHTML = '✓';
+  if (isNative()) {
+    try {
+      const result = await window.Capacitor.Plugins.VoiceRecorder.stopRecording();
+      onRecordingSaved(base64ToBlob(result.value.recordDataBase64, result.value.mimeType));
+    } catch(e) {
+      document.getElementById('recStatus').textContent = 'Could not save recording: ' + (e.message || e);
+    }
+  } else if (mediaRecorder) {
     mediaRecorder.stop();
-    isRecording = false;
-    document.getElementById('recBtn').className = 'record-btn done';
-    document.getElementById('recBtn').innerHTML = '✓';
   }
 }
 
