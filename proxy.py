@@ -109,6 +109,12 @@ class ProxyHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(data)))
+        if ext == ".html":
+            # Always revalidate the app shell — the packaged Android/iOS app loads this
+            # URL directly, so a stale cached copy would silently hide new code/fixes.
+            self.send_header("Cache-Control", "no-cache, must-revalidate")
+        else:
+            self.send_header("Cache-Control", "public, max-age=3600")
         self._cors()
         self.end_headers()
         self.wfile.write(data)
