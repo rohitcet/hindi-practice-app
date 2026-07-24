@@ -245,7 +245,7 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
 <body>
 <header>
   <div class="header-inner">
-    <img class="header-icon" src="/images/kiddos_banner.jpg" alt="Hindi Practice">
+    <img class="header-icon" src="/images/icon_logo.jpg" alt="Hindi Practice">
     <div class="header-title">
       <h1>&#2361;&#2367;&#2306;&#2342;&#2368; &#2309;&#2349;&#2381;&#2351;&#2366;&#2360; &nbsp;&#183;&nbsp; Hindi Practice</h1>
       <p>PSLE Mock Test</p>
@@ -1056,6 +1056,10 @@ const SUPABASE_URL = 'https://zpdbsitdglrzsqndpgkd.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_ZyvZ_1y9nFs8QW2ue0RcGg_17rJn-ns';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const TRIAL_MS = 50 * 60 * 1000; // 50 minute free trial
+const TEST_USER_EMAILS = ['rohit.cet@gmail.com', 'ektachoubey@gmail.com']; // never subject to the trial window
+function hasUnlimitedAccess(profile){
+  return !!profile && (profile.is_lifetime || TEST_USER_EMAILS.includes(currentUser && currentUser.email));
+}
 
 // ADMIN PASSWORD — change this to something secure
 const ADMIN_PASSWORD = 'HindiAdmin2024!';
@@ -1139,11 +1143,12 @@ async function onSignedIn(session, trialRetries) {
 async function checkAccessAndShowScreen(retriesLeft) {
   const { data: profile } = await sb.from('profiles').select('trial_started_at,is_lifetime').eq('id', currentUser.id).single();
   currentProfile = profile;
-  const hasAccess = !!profile && (profile.is_lifetime || (Date.now() - new Date(profile.trial_started_at).getTime()) < TRIAL_MS);
+  const unlimited = hasUnlimitedAccess(profile);
+  const hasAccess = !!profile && (unlimited || (Date.now() - new Date(profile.trial_started_at).getTime()) < TRIAL_MS);
 
   if (hasAccess) {
     showScreenAfterLogin();
-    if (!profile.is_lifetime) startTrialWatch(); else clearInterval(trialWatchInterval);
+    if (!unlimited) startTrialWatch(); else clearInterval(trialWatchInterval);
   } else if (retriesLeft > 0) {
     // Coming back from Stripe — webhook may take a moment to land, retry briefly
     setTimeout(() => checkAccessAndShowScreen(retriesLeft - 1), 1500);
@@ -1189,7 +1194,7 @@ function formatPrice(p) {
 function updateUpgradeUI() {
   const pill = document.getElementById('upgradePill');
   const banner = document.getElementById('trialBanner');
-  if (!currentProfile || currentProfile.is_lifetime) {
+  if (!currentProfile || hasUnlimitedAccess(currentProfile)) {
     pill.style.display = 'none';
     banner.style.display = 'none';
     return;
@@ -1216,7 +1221,7 @@ let trialWatchInterval = null;
 function startTrialWatch(){
   clearInterval(trialWatchInterval);
   trialWatchInterval = setInterval(() => {
-    if (!currentProfile || currentProfile.is_lifetime) { clearInterval(trialWatchInterval); return; }
+    if (!currentProfile || hasUnlimitedAccess(currentProfile)) { clearInterval(trialWatchInterval); return; }
     updateUpgradeUI();
     const msLeft = TRIAL_MS - (Date.now() - new Date(currentProfile.trial_started_at).getTime());
     if (msLeft <= 0) { clearInterval(trialWatchInterval); forceExpireToPaywall(); }
