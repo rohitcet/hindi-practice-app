@@ -1,0 +1,9 @@
+{
+  "appId": "com.hindipracticepsle.app",
+  "appName": "Hindi Practice PSLE",
+  "webDir": "www",
+  "server": {
+    "url": "https://pslehindipractice.up.railway.app",
+    "cleartext": false
+  }
+}

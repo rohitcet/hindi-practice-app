@@ -3,3 +3,13 @@ archives/
 __pycache__/
 *.pyc
 .env
+
+# Android/Capacitor build artifacts and secrets
+mobile-app/node_modules/
+mobile-app/android/.gradle/
+mobile-app/android/app/build/
+mobile-app/android/build/
+mobile-app/android/capacitor-cordova-android-plugins/build/
+mobile-app/android/local.properties
+*.jks
+*.keystore

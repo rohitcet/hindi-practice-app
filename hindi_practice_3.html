@@ -4,7 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hindi PSLE Practice</title>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3948463856871959" crossorigin="anonymous"></script>
+<script>
+// Skip loading ads inside the packaged Android/iOS app (Play Store's Families Policy
+// restricts ad SDKs for child-directed apps) — the live website keeps ads as normal.
+if (!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())) {
+  const adsScript = document.createElement('script');
+  adsScript.async = true;
+  adsScript.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3948463856871959';
+  adsScript.crossOrigin = 'anonymous';
+  document.head.appendChild(adsScript);
+}
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{--saffron:#FF6B00;--saffron-light:#FFF0E5;--green:#138808;--green-light:#E6F5E6;--green-mid:#B3DDB3;--navy:#000080;--navy-light:#E6E6FF;--bg:#FAFAF8;--card:#FFFFFF;--text:#1A1A2E;--muted:#6B6B80;--border:#E8E8F0;--shadow:0 2px 12px rgba(0,0,0,0.07);--radius:12px;}
@@ -1054,7 +1064,11 @@ function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t
 // ============================================================
 const SUPABASE_URL = 'https://zpdbsitdglrzsqndpgkd.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_ZyvZ_1y9nFs8QW2ue0RcGg_17rJn-ns';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, { auth: { flowType: 'pkce' } });
+const NATIVE_AUTH_REDIRECT = 'hindipracticepsle://auth-callback';
+function isNative() {
+  return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+}
 const TRIAL_MS = 50 * 60 * 1000; // 50 minute free trial
 const TEST_USER_EMAILS = ['rohit.cet@gmail.com', 'ektachoubey@gmail.com']; // never subject to the trial window
 function hasUnlimitedAccess(profile){
@@ -1096,8 +1110,18 @@ function recordSession(score, total, year, section) {
 // ============================================================
 // SUPABASE GOOGLE SIGN-IN
 // ============================================================
-function signInWithGoogle() {
-  sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } });
+async function signInWithGoogle() {
+  if (isNative()) {
+    // Google blocks OAuth inside embedded WebViews — open it in a real Custom Tab instead,
+    // and catch the redirect back via the app's custom URL scheme (see appUrlOpen below).
+    const { data } = await sb.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: NATIVE_AUTH_REDIRECT, skipBrowserRedirect: true }
+    });
+    if (data && data.url) window.Capacitor.Plugins.Browser.open({ url: data.url });
+  } else {
+    sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } });
+  }
 }
 
 sb.auth.onAuthStateChange((event, session) => {
@@ -1107,6 +1131,18 @@ sb.auth.onAuthStateChange((event, session) => {
     resetToLoginScreen();
   }
 });
+
+if (isNative()) {
+  window.Capacitor.Plugins.App.addListener('appUrlOpen', async (data) => {
+    const url = new URL(data.url);
+    const code = url.searchParams.get('code');
+    if (code) {
+      const { data: sessionData } = await sb.auth.exchangeCodeForSession(code);
+      if (sessionData && sessionData.session) onSignedIn(sessionData.session);
+    }
+    window.Capacitor.Plugins.Browser.close();
+  });
+}
 
 async function onSignedIn(session, trialRetries) {
   const u = session.user;
