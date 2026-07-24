@@ -84,6 +84,9 @@ class ProxyHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         url_path = urllib.parse.urlparse(self.path).path
+        if url_path == "/pricing":
+            self._handle_get_pricing()
+            return
         if url_path == "/":
             url_path = "/hindi_practice_3.html"
 
@@ -119,6 +122,16 @@ class ProxyHandler(BaseHTTPRequestHandler):
             self.send_response(404)
             self._cors()
             self.end_headers()
+
+    def _handle_get_pricing(self):
+        if not (STRIPE_SECRET_KEY and STRIPE_PRICE_ID):
+            self._json_response(500, {"error": "Stripe is not configured on the server"})
+            return
+        try:
+            price = stripe.Price.retrieve(STRIPE_PRICE_ID)
+            self._json_response(200, {"amount": price.unit_amount, "currency": price.currency})
+        except Exception as e:
+            self._json_response(500, {"error": str(e)})
 
     def _handle_create_checkout_session(self):
         if not (STRIPE_SECRET_KEY and STRIPE_PRICE_ID):

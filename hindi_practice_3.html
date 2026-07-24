@@ -118,6 +118,12 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
 .user-name{font-size:13px;color:rgba(255,255,255,0.85);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .btn-logout{padding:5px 10px;border-radius:6px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:white;font-size:11px;cursor:pointer;transition:all 0.12s;}
 .btn-logout:hover{background:rgba(255,255,255,0.2);}
+.btn-upgrade{padding:5px 12px;border-radius:6px;background:var(--saffron);border:1px solid var(--saffron);color:white;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.12s;}
+.btn-upgrade:hover{background:#e05a00;}
+.trial-banner{display:none;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--saffron-light);border:1px solid #FFD166;border-radius:12px;padding:14px 18px;margin-bottom:20px;}
+.trial-banner p{font-size:13px;color:#92400E;font-weight:500;}
+.pricing-list{text-align:left;font-size:13px;color:var(--text);line-height:2;margin:14px 0;padding-left:4px;}
+.pricing-price{font-size:28px;font-weight:700;color:var(--navy);margin:10px 0;}
 /* ADMIN MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;}
 .modal-box{background:var(--card);border-radius:16px;padding:32px;max-width:420px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,0.2);}
@@ -239,6 +245,7 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
     <div class="user-bar" id="userBar" style="display:none">
       <img id="userAvatar" class="user-avatar" src="" alt="">
       <span id="userName" class="user-name"></span>
+      <button class="btn-upgrade" id="upgradePill" style="display:none" onclick="openPricingModal()">&#9889; Upgrade</button>
       <button class="btn-logout" onclick="signOut()">Sign out</button>
     </div>
   </div>
@@ -249,7 +256,11 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
   <div class="login-card">
     <div class="login-logo">&#127981;</div>
     <h2>&#2361;&#2367;&#2306;&#2342;&#2368; &#2309;&#2349;&#2381;&#2351;&#2366;&#2360;</h2>
-    <p>Sign in to track your progress and access all PSLE Hindi practice papers.<br>Your first day is free!</p>
+    <div class="pricing-list">
+      &#9989; Sign in free with Google<br>
+      &#9989; 1 day full access &mdash; no card needed<br>
+      &#9989; Then unlock lifetime access for <strong id="loginPriceText">&hellip;</strong>
+    </div>
     <button class="btn-google" onclick="signInWithGoogle()">
       <img src="https://www.google.com/favicon.ico" width="18" height="18">Sign in with Google</button>
     <div class="login-divider">or</div>
@@ -262,9 +273,27 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
   <div class="login-card">
     <div class="login-logo">&#128274;</div>
     <h2>Your free day is up!</h2>
-    <p>Unlock lifetime access to all PSLE Hindi practice papers, quizzes and oral practice pictures with a single one-time payment.</p>
+    <p>Unlock lifetime access to all PSLE Hindi practice papers, quizzes and oral practice pictures with a single one-time payment of <strong id="paywallPriceText">&hellip;</strong>.</p>
     <button class="btn-primary" style="width:100%;margin-bottom:12px" onclick="buyLifetimeAccess()" id="buyBtn">Unlock Lifetime Access &#8594;</button>
     <button class="admin-link" onclick="signOut()">Sign out</button>
+  </div>
+</div>
+
+<!-- PRICING MODAL -->
+<div class="modal-overlay" id="pricingModal" style="display:none" onclick="if(event.target===this)closePricingModal()">
+  <div class="modal-box">
+    <h3>&#128275; Unlock Lifetime Access</h3>
+    <div class="pricing-list">
+      &#9989; All 14 practice collections<br>
+      &#9989; Unlimited quizzes, forever<br>
+      &#9989; Oral practice pictures &amp; expert feedback<br>
+      &#9989; One-time payment, no recurring fees
+    </div>
+    <div class="pricing-price" id="pricingModalPrice">&hellip;</div>
+    <div class="modal-btns">
+      <button class="btn-primary" onclick="buyLifetimeAccess()" id="pricingModalBuyBtn">Continue to Checkout &#8594;</button>
+      <button class="btn-secondary" onclick="closePricingModal()">Cancel</button>
+    </div>
   </div>
 </div>
 
@@ -284,6 +313,10 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
 
 <main>
   <div id="homeScreen">
+    <div class="trial-banner" id="trialBanner">
+      <p id="trialBannerText"></p>
+      <button class="btn-upgrade" style="background:var(--navy);border-color:var(--navy)" onclick="openPricingModal()">Upgrade &#8594;</button>
+    </div>
     <div class="home-hero">
       <h2 class="hindi">&#2309;&#2349;&#2381;&#2351;&#2366;&#2360; &#2325;&#2352;&#2375;&#2306;, &#2310;&#2327;&#2375; &#2348;&#2397;&#2375;&#2306;!</h2>
       <p>Practice makes perfect &middot; PSLE Hindi preparation</p>
@@ -854,6 +887,7 @@ function restartQuiz(){document.getElementById('doneScreen').style.display='none
 function goHome(){
   document.getElementById('doneScreen').style.display='none';
   document.getElementById('quizScreen').style.display='none';
+  document.getElementById('oralScreen').style.display='none';
   document.getElementById('homeScreen').style.display='block';
   document.getElementById('headerScore').style.display='none';
   document.getElementById('homeBtn').style.display='none';
@@ -875,6 +909,8 @@ const ADMIN_PASSWORD = 'HindiAdmin2024!';
 // AUTH STATE
 // ============================================================
 let currentUser = null; // { id, name, email, picture }
+let currentProfile = null; // { trial_started_at, is_lifetime }
+let cachedPricing = null; // { amount, currency }
 let isAdmin = false;
 
 // User activity stored in localStorage
@@ -947,6 +983,7 @@ async function onSignedIn(session, trialRetries) {
 
 async function checkAccessAndShowScreen(retriesLeft) {
   const { data: profile } = await sb.from('profiles').select('trial_started_at,is_lifetime').eq('id', currentUser.id).single();
+  currentProfile = profile;
   const hasAccess = !!profile && (profile.is_lifetime || (Date.now() - new Date(profile.trial_started_at).getTime()) < TRIAL_MS);
 
   if (hasAccess) {
@@ -957,6 +994,7 @@ async function checkAccessAndShowScreen(retriesLeft) {
   } else {
     showPaywallScreen();
   }
+  updateUpgradeUI();
 }
 
 function showScreenAfterLogin() {
@@ -966,16 +1004,66 @@ function showScreenAfterLogin() {
   document.getElementById('homeBtn').style.display = 'none';
 }
 
-function showPaywallScreen() {
+async function showPaywallScreen() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('homeScreen').style.display = 'none';
   document.getElementById('paywallScreen').style.display = 'flex';
+  const pricing = await fetchPricing();
+  if (pricing) document.getElementById('paywallPriceText').textContent = formatPrice(pricing);
+}
+
+// ============================================================
+// PRICING / UPGRADE UI
+// ============================================================
+async function fetchPricing() {
+  if (cachedPricing) return cachedPricing;
+  try {
+    const resp = await fetch('/pricing');
+    const data = await resp.json();
+    if (data.amount != null) cachedPricing = data;
+  } catch (e) { /* leave cachedPricing null, callers show a fallback */ }
+  return cachedPricing;
+}
+
+function formatPrice(p) {
+  return new Intl.NumberFormat('en-SG', { style: 'currency', currency: p.currency.toUpperCase() }).format(p.amount / 100);
+}
+
+function updateUpgradeUI() {
+  const pill = document.getElementById('upgradePill');
+  const banner = document.getElementById('trialBanner');
+  if (!currentProfile || currentProfile.is_lifetime) {
+    pill.style.display = 'none';
+    banner.style.display = 'none';
+    return;
+  }
+  const msLeft = TRIAL_MS - (Date.now() - new Date(currentProfile.trial_started_at).getTime());
+  if (msLeft <= 0) {
+    pill.style.display = 'none';
+    banner.style.display = 'none';
+    return;
+  }
+  const hoursLeft = Math.max(1, Math.ceil(msLeft / 3600000));
+  pill.style.display = 'inline-flex';
+  banner.style.display = 'flex';
+  document.getElementById('trialBannerText').textContent =
+    '⏳ ' + hoursLeft + ' hour' + (hoursLeft === 1 ? '' : 's') + ' left in your free trial.';
+}
+
+async function openPricingModal() {
+  document.getElementById('pricingModal').style.display = 'flex';
+  const pricing = await fetchPricing();
+  document.getElementById('pricingModalPrice').textContent = pricing ? formatPrice(pricing) : 'One-time payment';
+}
+
+function closePricingModal() {
+  document.getElementById('pricingModal').style.display = 'none';
 }
 
 async function buyLifetimeAccess() {
-  const buyBtn = document.getElementById('buyBtn');
-  buyBtn.disabled = true;
-  buyBtn.textContent = 'Redirecting to checkout…';
+  const buyBtns = [document.getElementById('buyBtn'), document.getElementById('pricingModalBuyBtn')].filter(Boolean);
+  const originalText = buyBtns.map(b => b.textContent);
+  buyBtns.forEach(b => { b.disabled = true; b.textContent = 'Redirecting to checkout…'; });
   try {
     const { data: { session } } = await sb.auth.getSession();
     const resp = await fetch('/create-checkout-session', {
@@ -990,13 +1078,14 @@ async function buyLifetimeAccess() {
     }
   } catch (e) {
     toast('Checkout error: ' + e.message);
-    buyBtn.disabled = false;
-    buyBtn.textContent = 'Unlock Lifetime Access →';
+    buyBtns.forEach((b, i) => { b.disabled = false; b.textContent = originalText[i]; });
   }
 }
 
 function resetToLoginScreen() {
   currentUser = null;
+  currentProfile = null;
+  updateUpgradeUI();
   document.getElementById('userBar').style.display = 'none';
   document.getElementById('headerScore').style.display = 'none';
   document.getElementById('homeBtn').style.display = 'none';
@@ -1110,6 +1199,10 @@ document.addEventListener('DOMContentLoaded', async function() {
   // Hide all main screens, show login by default
   document.getElementById('homeScreen').style.display = 'none';
   document.getElementById('loginScreen').style.display = 'flex';
+
+  fetchPricing().then(pricing => {
+    if (pricing) document.getElementById('loginPriceText').textContent = formatPrice(pricing);
+  });
 
   const cameFromCheckout = new URLSearchParams(window.location.search).get('checkout') === 'success';
   if (cameFromCheckout) history.replaceState(null, '', window.location.pathname);
