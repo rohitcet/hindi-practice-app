@@ -13,3 +13,4 @@ mobile-app/android/capacitor-cordova-android-plugins/build/
 mobile-app/android/local.properties
 *.jks
 *.keystore
+keystore.properties
