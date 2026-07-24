@@ -111,6 +111,13 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
 .done-stat-card .l{font-size:11px;color:var(--muted);margin-top:2px;}
 .done-stat-card.c .n{color:var(--green);}.done-stat-card.w .n{color:#ef4444;}.done-stat-card.sk .n{color:var(--muted);}
 .done-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.mistake-card{background:var(--card);border:1px solid var(--border);border-left:4px solid #ef4444;border-radius:10px;padding:14px 16px;margin-bottom:10px;text-align:left;}
+.mistake-card.skipped{border-left-color:var(--muted);}
+.mistake-meta{font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.4px;}
+.mistake-q{font-size:14px;font-weight:500;margin-bottom:8px;line-height:1.5;}
+.mistake-ans{font-size:13px;margin-bottom:4px;line-height:1.5;}
+.mistake-ans.wrong{color:#b91c1c;}
+.mistake-ans.correct{color:var(--green);font-weight:600;}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--text);color:white;padding:9px 18px;border-radius:999px;font-size:13px;font-weight:500;transition:transform 0.3s;z-index:999;white-space:nowrap;}
 .toast.show{transform:translateX(-50%) translateY(0);}
 @media(max-width:600px){main{padding:14px 12px 60px;}.home-hero{padding:24px 16px;}.done-hero{padding:28px 16px;}}
@@ -415,6 +422,10 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
         <button class="btn-primary" onclick="restartQuiz()">Try again</button>
         <button class="btn-secondary" onclick="goHome()">&#8962; Home</button>
       </div>
+    </div>
+    <div id="mistakesReview" style="display:none">
+      <button class="btn-secondary" style="width:100%" onclick="toggleMistakesReview()" id="mistakesToggleBtn">&#128203; Review Mistakes (0)</button>
+      <div id="mistakesList" style="display:none;margin-top:14px"></div>
     </div>
   </div>
 
@@ -928,6 +939,7 @@ function finishPracticeSet(timedOut){
   document.getElementById('doneC').textContent = correct;
   document.getElementById('doneW').textContent = wrong;
   document.getElementById('doneSK').textContent = sk;
+  buildMistakesReview();
 }
 
 function selectMode(el,mode){document.querySelectorAll('.mode-card').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');selectedMode=mode;}
@@ -1043,6 +1055,31 @@ function showDone(){
   document.getElementById('doneC').textContent=correct;
   document.getElementById('doneW').textContent=wrong;
   document.getElementById('doneSK').textContent=sk;
+  buildMistakesReview();
+}
+function buildMistakesReview(){
+  const mistakes=[];
+  questions.forEach((q,i)=>{const a=answers[i];if(a&&!a.isCorrect)mistakes.push({q,a,idx:i});});
+  const container=document.getElementById('mistakesReview');
+  const list=document.getElementById('mistakesList');
+  list.style.display='none';
+  document.getElementById('mistakesToggleBtn').textContent='📋 Review Mistakes ('+mistakes.length+')';
+  if(!mistakes.length){container.style.display='none';return;}
+  container.style.display='block';
+  list.innerHTML=mistakes.map(m=>
+    '<div class="mistake-card hindi'+(m.a.skipped?' skipped':'')+'">'+
+      '<div class="mistake-meta">Collection '+(YEAR_TO_COLLECTION[m.q.year]||m.q.year)+' &middot; '+m.q.section+'</div>'+
+      '<div class="mistake-q">'+(m.idx+1)+'. '+m.q.q+'</div>'+
+      (m.a.skipped
+        ? '<div class="mistake-ans">&#8212; Skipped</div>'
+        : '<div class="mistake-ans wrong">Your answer: '+m.q.opts[m.a.chosen]+'</div>')+
+      '<div class="mistake-ans correct">Correct answer: '+m.q.opts[m.q.ans]+'</div>'+
+    '</div>'
+  ).join('');
+}
+function toggleMistakesReview(){
+  const list=document.getElementById('mistakesList');
+  list.style.display=list.style.display==='block'?'none':'block';
 }
 function restartQuiz(){document.getElementById('doneScreen').style.display='none';startQuiz();}
 function goHome(){
@@ -1614,7 +1651,7 @@ async function startRecording() {
       if (recordSeconds >= 300) { stopRecording(); }
     }, 1000);
   } catch(e) {
-    document.getElementById('recStatus').textContent = 'Microphone access denied: ' + e.name + ' — ' + e.message;
+    document.getElementById('recStatus').textContent = 'Microphone access denied. Please allow microphone in browser settings.';
   }
 }
 
