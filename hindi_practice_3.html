@@ -1591,7 +1591,7 @@ async function startRecording() {
       if (recordSeconds >= 300) { stopRecording(); }
     }, 1000);
   } catch(e) {
-    document.getElementById('recStatus').textContent = 'Microphone access denied. Please allow microphone in browser settings.';
+    document.getElementById('recStatus').textContent = 'Microphone access denied: ' + e.name + ' — ' + e.message;
   }
 }
 
