@@ -1110,7 +1110,7 @@ function isNative() {
 const TRIAL_MS = 50 * 60 * 1000; // 50 minute free trial
 const TEST_USER_EMAILS = ['rohit.cet@gmail.com', 'ektachoubey@gmail.com']; // never subject to the trial window
 function hasUnlimitedAccess(profile){
-  return !!profile && (profile.is_lifetime || TEST_USER_EMAILS.includes(currentUser && currentUser.email));
+  return !!profile && (profile.is_subscribed || TEST_USER_EMAILS.includes(currentUser && currentUser.email));
 }
 
 // ADMIN PASSWORD — change this to something secure
@@ -1120,7 +1120,7 @@ const ADMIN_PASSWORD = 'HindiAdmin2024!';
 // AUTH STATE
 // ============================================================
 let currentUser = null; // { id, name, email, picture }
-let currentProfile = null; // { trial_started_at, is_lifetime }
+let currentProfile = null; // { trial_started_at, is_subscribed }
 let cachedPricing = null; // { amount, currency }
 let isAdmin = false;
 
@@ -1303,7 +1303,7 @@ async function onSignedIn(session, trialRetries) {
 }
 
 async function checkAccessAndShowScreen(retriesLeft) {
-  const { data: profile } = await sb.from('profiles').select('trial_started_at,is_lifetime').eq('id', currentUser.id).single();
+  const { data: profile } = await sb.from('profiles').select('trial_started_at,is_subscribed').eq('id', currentUser.id).single();
   currentProfile = profile;
   const unlimited = hasUnlimitedAccess(profile);
   const hasAccess = !!profile && (unlimited || (Date.now() - new Date(profile.trial_started_at).getTime()) < TRIAL_MS);

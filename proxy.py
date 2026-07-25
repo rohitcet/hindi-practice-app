@@ -120,8 +120,8 @@ def find_user_id_by_customer(stripe_customer_id):
 
 
 def set_subscription_active(user_id, active, stripe_customer_id=None, stripe_subscription_id=None):
-    """Flip is_lifetime (now used as the "has active paid access" flag) on a user's profile row."""
-    patch = {"is_lifetime": active}
+    """Flip is_subscribed (whether this user currently has active paid access) on their profile row."""
+    patch = {"is_subscribed": active}
     if stripe_customer_id is not None:
         patch["stripe_customer_id"] = stripe_customer_id
     if stripe_subscription_id is not None:
