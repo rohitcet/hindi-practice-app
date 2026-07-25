@@ -1230,13 +1230,19 @@ if (isNative()) {
 
     store.when().approved(async (transaction) => {
       try {
-        const purchaseToken = transaction.nativeData && transaction.nativeData.purchaseToken;
-        if (!purchaseToken) return;
+        const purchaseToken = transaction.purchaseId ||
+          (transaction.parentReceipt && transaction.parentReceipt.purchaseToken);
+        if (!purchaseToken) {
+          console.error('Play Billing: no purchaseToken found on transaction', transaction);
+          return;
+        }
         const result = await window.verifyPlayPurchase(purchaseToken);
         if (result && result.success) {
           localStorage.setItem('playPurchaseToken', purchaseToken);
           await transaction.finish();
           window.onPlayPurchaseVerified(result.active);
+        } else {
+          console.error('Play purchase verification failed', result);
         }
       } catch (e) {
         console.error('Play purchase verification failed', e);
