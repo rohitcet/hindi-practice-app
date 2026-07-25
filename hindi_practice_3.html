@@ -321,7 +321,7 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
     <div class="pricing-list">
       &#9989; All 14 practice collections<br>
       &#9989; Unlimited quizzes, updated regularly<br>
-      &#9989; Oral practice pictures &amp; expert feedback<br>
+      &#9989; Oral practice pictures (expert teacher feedback available separately, extra fee)<br>
       &#9989; Cancel anytime, no long-term commitment
     </div>
     <div class="pricing-price" id="pricingModalPrice">&hellip;</div>
@@ -375,7 +375,7 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
       <div class="mode-card" onclick="selectMode(this,'cloze')"><div class="icon">&#128214;</div><h3>Cloze comprehension</h3><p>Read passages, fill missing words (A3)</p><div class="check">&#10003;</div></div>
       <div class="mode-card" onclick="selectMode(this,'comprehension')"><div class="icon">&#128269;</div><h3>Comprehension</h3><p>Read stories, answer MCQ (A4)</p><div class="check">&#10003;</div></div>
       
-      <div class="mode-card" onclick="selectMode(this,'oral')"><div class="icon">🎤</div><h3>Oral practice</h3><p>Describe pictures aloud, up to 5 minutes each — get expert feedback by email (A4 oral)</p><div class="check">&#10003;</div></div>
+      <div class="mode-card" onclick="selectMode(this,'oral')"><div class="icon">🎤</div><h3>Oral practice</h3><p>Describe pictures aloud, up to 5 minutes each — send recordings in for personalized feedback (A4 oral)</p><div class="check">&#10003;</div></div>
       <div class="mode-card" onclick="selectMode(this,'vocabulary')"><div class="icon">&#11088;</div><h3>Vocabulary</h3><p>Synonyms &amp; word meanings</p><div class="check">&#10003;</div></div>
       <div class="mode-card" onclick="selectMode(this,'practiceset')"><div class="icon">&#127919;</div><h3>Practice Set</h3><p>Timed mix: 5 language, 2 cloze, 5 vocabulary + 1 oral, from all collections</p><div class="check">&#10003;</div></div>
     </div>
@@ -1708,7 +1708,7 @@ function onRecordingSaved(blob) {
   downloadBtn.href = url;
   downloadBtn.style.display = 'block';
   document.getElementById('emailBtn').style.display = 'block';
-  document.getElementById('recStatus').textContent = 'Recording saved! Download it, then send it in for expert feedback.';
+  document.getElementById('recStatus').textContent = 'Recording saved! Download it, then send it in for personalized feedback.';
 }
 
 async function startRecording() {
@@ -1774,7 +1774,7 @@ const SUPPORT_EMAIL = 'hindipractice.psle@gmail.com';
 function emailForFeedback() {
   const subject = encodeURIComponent('Oral practice feedback request — Picture ' + (oralCurrent + 1));
   const body = encodeURIComponent(
-    'Hi,\n\nPlease find my Hindi oral practice recording attached for expert feedback.\n\n' +
+    'Hi,\n\nPlease find my Hindi oral practice recording attached for feedback.\n\n' +
     'Picture: ' + (oralCurrent + 1) + ' of ' + oralQuestions.length + '\n\n' +
     '(Please attach the file you just downloaded before sending this email.)\n\nThanks!'
   );
