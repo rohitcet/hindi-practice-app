@@ -8,5 +8,8 @@ project(':capacitor-app').projectDir = new File('../node_modules/@capacitor/app/
 include ':capacitor-browser'
 project(':capacitor-browser').projectDir = new File('../node_modules/@capacitor/browser/android')
 
+include ':capacitor-plugin-cdv-purchase'
+project(':capacitor-plugin-cdv-purchase').projectDir = new File('../node_modules/capacitor-plugin-cdv-purchase/android')
+
 include ':capacitor-voice-recorder'
 project(':capacitor-voice-recorder').projectDir = new File('../node_modules/capacitor-voice-recorder/android')

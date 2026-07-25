@@ -15,6 +15,7 @@
     "@capacitor/browser": "^8.0.4",
     "@capacitor/cli": "^8.4.2",
     "@capacitor/core": "^8.4.2",
+    "capacitor-plugin-cdv-purchase": "^13.18.0",
     "capacitor-voice-recorder": "^7.0.6"
   },
   "devDependencies": {
