@@ -9,6 +9,7 @@ paywall. Stripe, Google and Supabase secret keys never reach the browser.
 import os
 import json
 import posixpath
+import traceback
 import urllib.parse
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
@@ -340,6 +341,7 @@ class ProxyHandler(BaseHTTPRequestHandler):
             set_subscription_active(user["id"], is_active)
             self._json_response(200, {"success": True, "active": is_active})
         except Exception as e:
+            traceback.print_exc()
             self._json_response(500, {"error": str(e)})
 
     def _json_response(self, status, obj):
