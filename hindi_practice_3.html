@@ -1317,6 +1317,7 @@ async function checkAccessAndShowScreen(retriesLeft) {
   if (hasAccess) {
     showScreenAfterLogin();
     if (!unlimited) startTrialWatch(); else clearInterval(trialWatchInterval);
+    updateUpgradeUI();
   } else if (retriesLeft > 0) {
     // Coming back from Stripe — webhook may take a moment to land, retry briefly
     setTimeout(() => checkAccessAndShowScreen(retriesLeft - 1), 1500);
@@ -1389,7 +1390,7 @@ let trialWatchInterval = null;
 function startTrialWatch(){
   clearInterval(trialWatchInterval);
   trialWatchInterval = setInterval(() => {
-    if (!currentProfile || hasUnlimitedAccess(currentProfile)) { clearInterval(trialWatchInterval); return; }
+    if (!currentProfile || hasUnlimitedAccess(currentProfile)) { clearInterval(trialWatchInterval); updateUpgradeUI(); return; }
     updateUpgradeUI();
     const msLeft = TRIAL_MS - (Date.now() - new Date(currentProfile.trial_started_at).getTime());
     if (msLeft <= 0) { clearInterval(trialWatchInterval); forceExpireToPaywall(); }
