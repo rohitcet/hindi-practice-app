@@ -43,6 +43,14 @@ def _get_play_credentials():
         )
     return _play_credentials
 
+def _stripe_get(obj, key, default=None):
+    """Newer stripe-python versions dropped dict-style .get() from event objects."""
+    try:
+        return obj[key]
+    except (KeyError, AttributeError, TypeError):
+        return default
+
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 MIME_TYPES = {
@@ -244,17 +252,17 @@ class ProxyHandler(BaseHTTPRequestHandler):
         obj = event["data"]["object"]
 
         if event_type == "checkout.session.completed":
-            user_id = obj.get("client_reference_id")
-            customer_id = obj.get("customer")
-            subscription_id = obj.get("subscription")
+            user_id = _stripe_get(obj, "client_reference_id")
+            customer_id = _stripe_get(obj, "customer")
+            subscription_id = _stripe_get(obj, "subscription")
             if user_id:
                 set_subscription_active(user_id, True, customer_id, subscription_id)
 
         elif event_type == "customer.subscription.updated":
             # 'active'/'trialing' -> paying. 'past_due' is a grace period (Stripe is still
             # retrying the card) so access stays on; only a fully lapsed status revokes it.
-            customer_id = obj.get("customer")
-            status = obj.get("status")
+            customer_id = _stripe_get(obj, "customer")
+            status = _stripe_get(obj, "status")
             user_id = find_user_id_by_customer(customer_id)
             if user_id:
                 if status in ("active", "trialing", "past_due"):
@@ -263,7 +271,7 @@ class ProxyHandler(BaseHTTPRequestHandler):
                     set_subscription_active(user_id, False)
 
         elif event_type == "customer.subscription.deleted":
-            customer_id = obj.get("customer")
+            customer_id = _stripe_get(obj, "customer")
             user_id = find_user_id_by_customer(customer_id)
             if user_id:
                 set_subscription_active(user_id, False)
