@@ -65,6 +65,8 @@ MIME_TYPES = {
     ".js": "application/javascript",
     ".json": "application/json",
     ".ico": "image/x-icon",
+    ".txt": "text/plain; charset=utf-8",
+    ".xml": "application/xml",
 }
 
 
