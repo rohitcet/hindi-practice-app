@@ -25,8 +25,10 @@ STRIPE_PRICE_ID = os.environ.get("STRIPE_PRICE_ID")
 GOOGLE_PLAY_PACKAGE_NAME = os.environ.get("GOOGLE_PLAY_PACKAGE_NAME", "com.hindipracticepsle.app")
 GOOGLE_PLAY_SUBSCRIPTION_ID = os.environ.get("GOOGLE_PLAY_SUBSCRIPTION_ID", "monthly_access")
 GOOGLE_SERVICE_ACCOUNT_JSON = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
-GMAIL_ADDRESS = os.environ.get("GMAIL_ADDRESS")
-GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD")
+GMAIL_ADDRESS = os.environ.get("GMAIL_ADDRESS", "hindipractice.psle@gmail.com")
+GMAIL_OAUTH_CLIENT_ID = os.environ.get("GMAIL_OAUTH_CLIENT_ID")
+GMAIL_OAUTH_CLIENT_SECRET = os.environ.get("GMAIL_OAUTH_CLIENT_SECRET")
+GMAIL_OAUTH_REFRESH_TOKEN = os.environ.get("GMAIL_OAUTH_REFRESH_TOKEN")
 
 if STRIPE_SECRET_KEY:
     stripe.api_key = STRIPE_SECRET_KEY
@@ -148,11 +150,27 @@ toolkit. Consistent practice is what moves the needle, and that's exactly what u
 """
 
 
+def _get_gmail_access_token():
+    resp = requests.post(
+        "https://oauth2.googleapis.com/token",
+        data={
+            "client_id": GMAIL_OAUTH_CLIENT_ID,
+            "client_secret": GMAIL_OAUTH_CLIENT_SECRET,
+            "refresh_token": GMAIL_OAUTH_REFRESH_TOKEN,
+            "grant_type": "refresh_token",
+        },
+        timeout=10,
+    )
+    resp.raise_for_status()
+    return resp.json()["access_token"]
+
+
 def send_welcome_email(to_email, name):
-    if not (GMAIL_ADDRESS and GMAIL_APP_PASSWORD):
+    """Sends via the Gmail API over HTTPS rather than raw SMTP — Railway blocks outbound
+    SMTP ports entirely, but HTTPS works fine (same as the Stripe/Google API calls)."""
+    if not (GMAIL_OAUTH_CLIENT_ID and GMAIL_OAUTH_CLIENT_SECRET and GMAIL_OAUTH_REFRESH_TOKEN):
         return
-    import smtplib
-    import socket
+    import base64
     from email.mime.multipart import MIMEMultipart
     from email.mime.text import MIMEText
 
@@ -162,21 +180,15 @@ def send_welcome_email(to_email, name):
     msg["To"] = to_email
     msg.attach(MIMEText(WELCOME_EMAIL_HTML.format(name=name or "there"), "html"))
 
-    # Some hosts (Railway included) have no outbound IPv6 route, but Gmail's DNS returns
-    # an IPv6 address too — force IPv4 resolution to avoid an ENETUNREACH failure.
-    original_getaddrinfo = socket.getaddrinfo
-
-    def _ipv4_only_getaddrinfo(host, port, family=0, type=0, proto=0, flags=0):
-        return original_getaddrinfo(host, port, socket.AF_INET, type, proto, flags)
-
-    socket.getaddrinfo = _ipv4_only_getaddrinfo
-    try:
-        with smtplib.SMTP("smtp.gmail.com", 587, timeout=15) as server:
-            server.starttls()
-            server.login(GMAIL_ADDRESS, GMAIL_APP_PASSWORD)
-            server.sendmail(GMAIL_ADDRESS, [to_email], msg.as_string())
-    finally:
-        socket.getaddrinfo = original_getaddrinfo
+    access_token = _get_gmail_access_token()
+    raw = base64.urlsafe_b64encode(msg.as_bytes()).decode("ascii")
+    resp = requests.post(
+        "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+        headers={"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"},
+        json={"raw": raw},
+        timeout=15,
+    )
+    resp.raise_for_status()
 
 
 def set_subscription_active(user_id, active, stripe_customer_id=None, stripe_subscription_id=None):
