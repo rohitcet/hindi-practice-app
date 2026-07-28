@@ -149,6 +149,34 @@ toolkit. Consistent practice is what moves the needle, and that's exactly what u
 <p>Warm regards,<br>The Hindi Practice PSLE Team</p>
 """
 
+WELCOME_EMAIL_TEXT = """\
+Hi {name},
+
+Welcome to Hindi Practice PSLE! You've got 50 minutes of full free access starting now — enough
+time to see exactly how this can help with PSLE Hindi prep.
+
+Here's everything unlocked during your trial:
+
+- 300+ practice questions across all 14 collections — Language Use, Cloze Comprehension,
+  Comprehension, and Vocabulary
+- Oral Practice — describe picture prompts aloud, exactly like the real PSLE oral exam
+- Practice Set — a timed, randomized mock combining every section, just like exam day
+- Review Mistakes — instantly see what went wrong and why, so every minute of practice counts
+
+Best way to spend your 50 minutes: try Practice Set first — it's the closest thing to a real PSLE
+mock exam, and will show you exactly where extra practice pays off most.
+
+When your trial ends, continuing is $11/month — less than $0.40 a day for unlimited practice across
+every section, with new content added regularly. Cancel anytime, no long-term commitment.
+
+Questions or feedback? Just reply — I read every message.
+
+Good luck with your PSLE prep!
+
+Warm regards,
+The Hindi Practice PSLE Team
+"""
+
 
 def _get_gmail_access_token():
     resp = requests.post(
@@ -175,9 +203,12 @@ def send_welcome_email(to_email, name):
     from email.mime.text import MIMEText
 
     msg = MIMEMultipart("alternative")
-    msg["Subject"] = "Welcome to Hindi Practice PSLE — your 50 minutes start now! \U0001F389"
+    msg["Subject"] = "Welcome to Hindi Practice PSLE"
     msg["From"] = GMAIL_ADDRESS
     msg["To"] = to_email
+    # Plain-text part must come first, HTML second — email clients render the last
+    # part they can handle, and having both (not HTML-only) is itself a spam-filter signal.
+    msg.attach(MIMEText(WELCOME_EMAIL_TEXT.format(name=name or "there"), "plain"))
     msg.attach(MIMEText(WELCOME_EMAIL_HTML.format(name=name or "there"), "html"))
 
     access_token = _get_gmail_access_token()
