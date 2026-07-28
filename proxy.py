@@ -152,6 +152,7 @@ def send_welcome_email(to_email, name):
     if not (GMAIL_ADDRESS and GMAIL_APP_PASSWORD):
         return
     import smtplib
+    import socket
     from email.mime.multipart import MIMEMultipart
     from email.mime.text import MIMEText
 
@@ -161,9 +162,20 @@ def send_welcome_email(to_email, name):
     msg["To"] = to_email
     msg.attach(MIMEText(WELCOME_EMAIL_HTML.format(name=name or "there"), "html"))
 
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=15) as server:
-        server.login(GMAIL_ADDRESS, GMAIL_APP_PASSWORD)
-        server.sendmail(GMAIL_ADDRESS, [to_email], msg.as_string())
+    # Some hosts (Railway included) have no outbound IPv6 route, but Gmail's DNS returns
+    # an IPv6 address too — force IPv4 resolution to avoid an ENETUNREACH failure.
+    original_getaddrinfo = socket.getaddrinfo
+
+    def _ipv4_only_getaddrinfo(host, port, family=0, type=0, proto=0, flags=0):
+        return original_getaddrinfo(host, port, socket.AF_INET, type, proto, flags)
+
+    socket.getaddrinfo = _ipv4_only_getaddrinfo
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=15) as server:
+            server.login(GMAIL_ADDRESS, GMAIL_APP_PASSWORD)
+            server.sendmail(GMAIL_ADDRESS, [to_email], msg.as_string())
+    finally:
+        socket.getaddrinfo = original_getaddrinfo
 
 
 def set_subscription_active(user_id, active, stripe_customer_id=None, stripe_subscription_id=None):
