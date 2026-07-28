@@ -1327,10 +1327,17 @@ async function onSignedIn(session, trialRetries) {
   document.getElementById('userBar').style.display = 'flex';
 
   // Ensure a profile row exists (first login only — ignores duplicates so trial_started_at doesn't reset)
-  await sb.from('profiles').upsert(
+  const { data: profileInsertData } = await sb.from('profiles').upsert(
     { id: currentUser.id, email: currentUser.email, name: currentUser.name, avatar_url: currentUser.picture },
     { onConflict: 'id', ignoreDuplicates: true }
-  );
+  ).select();
+  if (profileInsertData && profileInsertData.length > 0) {
+    // A row was actually returned only when the insert was genuinely new (ignored duplicates return nothing).
+    fetch('/new-user-webhook', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + session.access_token }
+    }).catch(() => {});
+  }
 
   // Register user in localStorage (existing local activity tracking, unchanged)
   const users = getStoredUsers();

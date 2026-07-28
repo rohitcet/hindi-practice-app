@@ -27,7 +27,6 @@ GOOGLE_PLAY_SUBSCRIPTION_ID = os.environ.get("GOOGLE_PLAY_SUBSCRIPTION_ID", "mon
 GOOGLE_SERVICE_ACCOUNT_JSON = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
 GMAIL_ADDRESS = os.environ.get("GMAIL_ADDRESS")
 GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD")
-NEW_USER_WEBHOOK_SECRET = os.environ.get("NEW_USER_WEBHOOK_SECRET")
 
 if STRIPE_SECRET_KEY:
     stripe.api_key = STRIPE_SECRET_KEY
@@ -394,22 +393,19 @@ class ProxyHandler(BaseHTTPRequestHandler):
             self._json_response(500, {"error": str(e)})
 
     def _handle_new_user_webhook(self):
-        """Called by a Supabase Database Webhook on INSERT into profiles. Sends the welcome email."""
-        length = int(self.headers.get("Content-Length", 0))
-        try:
-            body = json.loads(self.rfile.read(length) or b"{}")
-        except json.JSONDecodeError:
-            self._json_response(400, {"error": "Invalid JSON"})
+        """Called by the app right after a genuinely new profile row is created. Sends the welcome email.
+        Identifies the user via their own Supabase session token rather than a shared secret, so this
+        can't be abused to send arbitrary email to arbitrary addresses."""
+        auth_header = self.headers.get("Authorization", "")
+        token = auth_header[7:] if auth_header.lower().startswith("bearer ") else ""
+        user = get_supabase_user(token)
+        if not user:
+            self._json_response(401, {"error": "Not signed in"})
             return
 
-        secret = self.headers.get("X-Webhook-Secret", "")
-        if not NEW_USER_WEBHOOK_SECRET or secret != NEW_USER_WEBHOOK_SECRET:
-            self._json_response(401, {"error": "Invalid webhook secret"})
-            return
-
-        record = body.get("record") or {}
-        email = record.get("email")
-        full_name = record.get("name")
+        email = user.get("email")
+        user_metadata = user.get("user_metadata") or {}
+        full_name = user_metadata.get("full_name") or user_metadata.get("name")
         name = full_name.split(" ")[0] if full_name else None
 
         try:
