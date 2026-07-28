@@ -25,6 +25,9 @@ STRIPE_PRICE_ID = os.environ.get("STRIPE_PRICE_ID")
 GOOGLE_PLAY_PACKAGE_NAME = os.environ.get("GOOGLE_PLAY_PACKAGE_NAME", "com.hindipracticepsle.app")
 GOOGLE_PLAY_SUBSCRIPTION_ID = os.environ.get("GOOGLE_PLAY_SUBSCRIPTION_ID", "monthly_access")
 GOOGLE_SERVICE_ACCOUNT_JSON = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
+GMAIL_ADDRESS = os.environ.get("GMAIL_ADDRESS")
+GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD")
+NEW_USER_WEBHOOK_SECRET = os.environ.get("NEW_USER_WEBHOOK_SECRET")
 
 if STRIPE_SECRET_KEY:
     stripe.api_key = STRIPE_SECRET_KEY
@@ -122,6 +125,48 @@ def find_user_id_by_customer(stripe_customer_id):
     return rows[0]["id"] if rows else None
 
 
+WELCOME_EMAIL_HTML = """\
+<p>Hi {name},</p>
+<p>Welcome to <b>Hindi Practice PSLE</b>! You've got <b>50 minutes of full free access</b> starting now &mdash;
+enough time to see exactly how this can help with PSLE Hindi prep.</p>
+<p>Here's everything unlocked during your trial:</p>
+<ul>
+<li>&#128218; <b>300+ practice questions</b> across all 14 collections &mdash; Language Use, Cloze Comprehension,
+Comprehension, and Vocabulary</li>
+<li>&#127908; <b>Oral Practice</b> &mdash; describe picture prompts aloud, exactly like the real PSLE oral exam</li>
+<li>&#127919; <b>Practice Set</b> &mdash; a timed, randomized mock combining every section, just like exam day</li>
+<li>&#128203; <b>Review Mistakes</b> &mdash; instantly see what went wrong and why, so every minute of practice counts</li>
+</ul>
+<p><b>Best way to spend your 50 minutes</b>: try <b>Practice Set</b> first &mdash; it's the closest thing to a real
+PSLE mock exam, and will show you exactly where extra practice pays off most.</p>
+<p>When your trial ends, continuing is <b>$11/month</b> &mdash; less than $0.40 a day for unlimited practice across
+every section, with new content added regularly. Cancel anytime, no long-term commitment, no risk in trying it out.</p>
+<p>PSLE prep gets expensive fast &mdash; this is designed to be the affordable, always-available part of that
+toolkit. Consistent practice is what moves the needle, and that's exactly what unlimited access gives you.</p>
+<p>Questions or feedback? Just reply &mdash; I read every message.</p>
+<p>Good luck with your PSLE prep!</p>
+<p>Warm regards,<br>The Hindi Practice PSLE Team</p>
+"""
+
+
+def send_welcome_email(to_email, name):
+    if not (GMAIL_ADDRESS and GMAIL_APP_PASSWORD):
+        return
+    import smtplib
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = "Welcome to Hindi Practice PSLE — your 50 minutes start now! \U0001F389"
+    msg["From"] = GMAIL_ADDRESS
+    msg["To"] = to_email
+    msg.attach(MIMEText(WELCOME_EMAIL_HTML.format(name=name or "there"), "html"))
+
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=15) as server:
+        server.login(GMAIL_ADDRESS, GMAIL_APP_PASSWORD)
+        server.sendmail(GMAIL_ADDRESS, [to_email], msg.as_string())
+
+
 def set_subscription_active(user_id, active, stripe_customer_id=None, stripe_subscription_id=None):
     """Flip is_subscribed (whether this user currently has active paid access) on their profile row."""
     patch = {"is_subscribed": active}
@@ -190,6 +235,8 @@ class ProxyHandler(BaseHTTPRequestHandler):
             self._handle_stripe_webhook()
         elif self.path == "/verify-play-purchase":
             self._handle_verify_play_purchase()
+        elif self.path == "/new-user-webhook":
+            self._handle_new_user_webhook()
         else:
             self.send_response(404)
             self._cors()
@@ -342,6 +389,33 @@ class ProxyHandler(BaseHTTPRequestHandler):
 
             set_subscription_active(user["id"], is_active)
             self._json_response(200, {"success": True, "active": is_active})
+        except Exception as e:
+            traceback.print_exc()
+            self._json_response(500, {"error": str(e)})
+
+    def _handle_new_user_webhook(self):
+        """Called by a Supabase Database Webhook on INSERT into profiles. Sends the welcome email."""
+        length = int(self.headers.get("Content-Length", 0))
+        try:
+            body = json.loads(self.rfile.read(length) or b"{}")
+        except json.JSONDecodeError:
+            self._json_response(400, {"error": "Invalid JSON"})
+            return
+
+        secret = self.headers.get("X-Webhook-Secret", "")
+        if not NEW_USER_WEBHOOK_SECRET or secret != NEW_USER_WEBHOOK_SECRET:
+            self._json_response(401, {"error": "Invalid webhook secret"})
+            return
+
+        record = body.get("record") or {}
+        email = record.get("email")
+        full_name = record.get("name")
+        name = full_name.split(" ")[0] if full_name else None
+
+        try:
+            if email:
+                send_welcome_email(email, name)
+            self._json_response(200, {"received": True})
         except Exception as e:
             traceback.print_exc()
             self._json_response(500, {"error": str(e)})
