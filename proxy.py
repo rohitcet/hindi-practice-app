@@ -171,7 +171,8 @@ def send_welcome_email(to_email, name):
 
     socket.getaddrinfo = _ipv4_only_getaddrinfo
     try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=15) as server:
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=15) as server:
+            server.starttls()
             server.login(GMAIL_ADDRESS, GMAIL_APP_PASSWORD)
             server.sendmail(GMAIL_ADDRESS, [to_email], msg.as_string())
     finally:
