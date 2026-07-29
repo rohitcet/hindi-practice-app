@@ -25,7 +25,7 @@ STRIPE_PRICE_ID = os.environ.get("STRIPE_PRICE_ID")
 GOOGLE_PLAY_PACKAGE_NAME = os.environ.get("GOOGLE_PLAY_PACKAGE_NAME", "com.hindipracticepsle.app")
 GOOGLE_PLAY_SUBSCRIPTION_ID = os.environ.get("GOOGLE_PLAY_SUBSCRIPTION_ID", "monthly_access")
 GOOGLE_SERVICE_ACCOUNT_JSON = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
-GMAIL_ADDRESS = os.environ.get("GMAIL_ADDRESS", "hindipractice.psle@gmail.com")
+GMAIL_ADDRESS = os.environ.get("GMAIL_ADDRESS", "hello@hikagroup.co")
 GMAIL_OAUTH_CLIENT_ID = os.environ.get("GMAIL_OAUTH_CLIENT_ID")
 GMAIL_OAUTH_CLIENT_SECRET = os.environ.get("GMAIL_OAUTH_CLIENT_SECRET")
 GMAIL_OAUTH_REFRESH_TOKEN = os.environ.get("GMAIL_OAUTH_REFRESH_TOKEN")
@@ -204,7 +204,7 @@ def send_welcome_email(to_email, name):
 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = "Welcome to Hindi Practice PSLE"
-    msg["From"] = GMAIL_ADDRESS
+    msg["From"] = f"Hindi Practice PSLE <{GMAIL_ADDRESS}>"
     msg["To"] = to_email
     # Plain-text part must come first, HTML second — email clients render the last
     # part they can handle, and having both (not HTML-only) is itself a spam-filter signal.

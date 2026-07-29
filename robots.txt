@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://pslehindipractice.up.railway.app/sitemap.xml
+Sitemap: https://hindipractice.hikagroup.co/sitemap.xml

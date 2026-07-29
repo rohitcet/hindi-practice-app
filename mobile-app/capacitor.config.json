@@ -3,7 +3,7 @@
   "appName": "Hindi Practice PSLE",
   "webDir": "www",
   "server": {
-    "url": "https://pslehindipractice.up.railway.app",
+    "url": "https://hindipractice.hikagroup.co",
     "cleartext": false
   }
 }
