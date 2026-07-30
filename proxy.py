@@ -30,6 +30,7 @@ ZOHO_ACCOUNT_ID = os.environ.get("ZOHO_ACCOUNT_ID")
 ZOHO_OAUTH_CLIENT_ID = os.environ.get("ZOHO_OAUTH_CLIENT_ID")
 ZOHO_OAUTH_CLIENT_SECRET = os.environ.get("ZOHO_OAUTH_CLIENT_SECRET")
 ZOHO_OAUTH_REFRESH_TOKEN = os.environ.get("ZOHO_OAUTH_REFRESH_TOKEN")
+CAMPAIGN_SEND_SECRET = os.environ.get("CAMPAIGN_SEND_SECRET")
 
 if STRIPE_SECRET_KEY:
     stripe.api_key = STRIPE_SECRET_KEY
@@ -192,6 +193,55 @@ def send_welcome_email(to_email, name):
     resp.raise_for_status()
 
 
+NATIONAL_DAY_EMAIL_HTML = """\
+<div style="text-align:center;margin-bottom:16px">
+<img src="https://hindipractice.hikagroup.co/images/sg_flag.png" width="120" alt="Singapore flag" style="border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,0.2)">
+</div>
+<p>Hi {name},</p>
+<p>Happy 61st National Day, Singapore!</p>
+<p>To celebrate, <b>Hindi Practice PSLE is completely free for everyone until 9 August</b> &mdash; no trial limit,
+no subscription needed. Every section, every collection, unlocked.</p>
+<p>This is a great window to actually put the app through its paces:</p>
+<ul>
+<li>&#128218; <b>All 14 practice collections</b> &mdash; Language Use, Cloze Comprehension, Comprehension, and Vocabulary</li>
+<li>&#127908; <b>Oral Practice</b> &mdash; describe picture prompts aloud, just like the real PSLE oral exam</li>
+<li>&#127919; <b>Practice Set</b> &mdash; a full timed mock combining every section, exactly like exam day</li>
+<li>&#128203; <b>Review Mistakes</b> &mdash; see exactly what went wrong and why, right after every session</li>
+</ul>
+<p>If you've been meaning to try Practice Set, or haven't gotten to Oral Practice yet &mdash; now's the time,
+completely free.</p>
+<div style="text-align:center;margin:24px 0">
+<a href="https://hindipractice.hikagroup.co/" style="background:#000080;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700;display:inline-block">Start Practicing Now &rarr;</a>
+</div>
+<p>After 9 August, regular access is <b>$11/month</b>, but there's no pressure &mdash; enjoy the free week, and if
+it's been genuinely useful for your PSLE prep, subscribing keeps that consistent practice going.</p>
+<p>Happy National Day, and good luck with your PSLE prep!</p>
+<p>Warm regards,<br>The Hindi Practice PSLE Team</p>
+"""
+
+
+def send_campaign_email(to_email, name, subject, html):
+    if not (ZOHO_ACCOUNT_ID and ZOHO_OAUTH_CLIENT_ID and ZOHO_OAUTH_CLIENT_SECRET and ZOHO_OAUTH_REFRESH_TOKEN):
+        raise RuntimeError("Zoho is not configured on the server")
+    access_token = _get_zoho_access_token()
+    resp = requests.post(
+        f"https://mail.zoho.com/api/accounts/{ZOHO_ACCOUNT_ID}/messages",
+        headers={
+            "Authorization": f"Zoho-oauthtoken {access_token}",
+            "Content-Type": "application/json",
+        },
+        json={
+            "fromAddress": f"Hindi Practice PSLE <{ZOHO_FROM_ADDRESS}>",
+            "toAddress": to_email,
+            "subject": subject,
+            "content": html.format(name=name or "there"),
+            "mailFormat": "html",
+        },
+        timeout=15,
+    )
+    resp.raise_for_status()
+
+
 def set_subscription_active(user_id, active, stripe_customer_id=None, stripe_subscription_id=None):
     """Flip is_subscribed (whether this user currently has active paid access) on their profile row."""
     patch = {"is_subscribed": active}
@@ -262,6 +312,8 @@ class ProxyHandler(BaseHTTPRequestHandler):
             self._handle_verify_play_purchase()
         elif self.path == "/new-user-webhook":
             self._handle_new_user_webhook()
+        elif self.path == "/send-campaign":
+            self._handle_send_campaign()
         else:
             self.send_response(404)
             self._cors()
@@ -441,6 +493,60 @@ class ProxyHandler(BaseHTTPRequestHandler):
         except Exception as e:
             traceback.print_exc()
             self._json_response(500, {"error": str(e)})
+
+    def _handle_send_campaign(self):
+        """One-off, manually-triggered bulk send (e.g. the National Day promo email) to every
+        profile in Supabase, sent as separate individual emails — never batched/CC'd together.
+        Protected by a dedicated secret since this is a powerful bulk-action endpoint. Pass
+        {"dry_run": true} to preview the recipient list without actually sending anything."""
+        secret = self.headers.get("X-Campaign-Secret", "")
+        if not CAMPAIGN_SEND_SECRET or secret != CAMPAIGN_SEND_SECRET:
+            self._json_response(401, {"error": "Invalid campaign secret"})
+            return
+
+        length = int(self.headers.get("Content-Length", 0))
+        try:
+            body = json.loads(self.rfile.read(length) or b"{}")
+        except json.JSONDecodeError:
+            self._json_response(400, {"error": "Invalid JSON"})
+            return
+
+        dry_run = bool(body.get("dry_run"))
+        campaign = body.get("campaign", "national_day")
+        if campaign != "national_day":
+            self._json_response(400, {"error": f"Unknown campaign '{campaign}'"})
+            return
+        subject = "Happy National Day! Free full access on us, until 9 August"
+        html = NATIONAL_DAY_EMAIL_HTML
+
+        resp = requests.get(
+            f"{SUPABASE_URL}/rest/v1/profiles",
+            params={"select": "email,name"},
+            headers=_supabase_headers(),
+            timeout=15,
+        )
+        profiles = resp.json() if resp.status_code == 200 else []
+        recipients = [p for p in profiles if p.get("email")]
+
+        if dry_run:
+            self._json_response(200, {
+                "dry_run": True,
+                "total": len(recipients),
+                "recipients": [r["email"] for r in recipients],
+            })
+            return
+
+        results = []
+        for p in recipients:
+            email = p["email"]
+            first_name = (p.get("name") or "").split(" ")[0] or None
+            try:
+                send_campaign_email(email, first_name, subject, html)
+                results.append({"email": email, "status": "sent"})
+            except Exception as e:
+                results.append({"email": email, "status": "error", "error": str(e)})
+        sent_count = sum(1 for r in results if r["status"] == "sent")
+        self._json_response(200, {"total": len(results), "sent": sent_count, "results": results})
 
     def _json_response(self, status, obj):
         body = json.dumps(obj).encode("utf-8")
