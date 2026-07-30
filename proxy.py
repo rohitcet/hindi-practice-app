@@ -141,6 +141,9 @@ Comprehension, and Vocabulary</li>
 </ul>
 <p><b>Best way to spend your 50 minutes</b>: try <b>Practice Set</b> first &mdash; it's the closest thing to a real
 PSLE mock exam, and will show you exactly where extra practice pays off most.</p>
+<div style="text-align:center;margin:24px 0">
+<a href="https://hindipractice.hikagroup.co/" style="background:#000080;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700;display:inline-block">Continue Practicing &rarr;</a>
+</div>
 <p>When your trial ends, continuing is <b>$11/month</b> &mdash; less than $0.40 a day for unlimited practice across
 every section, with new content added regularly. Cancel anytime, no long-term commitment, no risk in trying it out.</p>
 <p>PSLE prep gets expensive fast &mdash; this is designed to be the affordable, always-available part of that
