@@ -178,7 +178,7 @@ def send_welcome_email(to_email, name):
             "Content-Type": "application/json",
         },
         json={
-            "fromAddress": ZOHO_FROM_ADDRESS,
+            "fromAddress": f"Hindi Practice PSLE <{ZOHO_FROM_ADDRESS}>",
             "toAddress": to_email,
             "subject": "Welcome to Hindi Practice PSLE",
             "content": WELCOME_EMAIL_HTML.format(name=name or "there"),
