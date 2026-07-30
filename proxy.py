@@ -528,6 +528,11 @@ class ProxyHandler(BaseHTTPRequestHandler):
         profiles = resp.json() if resp.status_code == 200 else []
         recipients = [p for p in profiles if p.get("email")]
 
+        only_emails = body.get("only_emails")
+        if only_emails:
+            only_set = {e.lower() for e in only_emails}
+            recipients = [r for r in recipients if r["email"].lower() in only_set]
+
         if dry_run:
             self._json_response(200, {
                 "dry_run": True,
