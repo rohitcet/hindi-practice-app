@@ -25,10 +25,11 @@ STRIPE_PRICE_ID = os.environ.get("STRIPE_PRICE_ID")
 GOOGLE_PLAY_PACKAGE_NAME = os.environ.get("GOOGLE_PLAY_PACKAGE_NAME", "com.hindipracticepsle.app")
 GOOGLE_PLAY_SUBSCRIPTION_ID = os.environ.get("GOOGLE_PLAY_SUBSCRIPTION_ID", "monthly_access")
 GOOGLE_SERVICE_ACCOUNT_JSON = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
-GMAIL_ADDRESS = os.environ.get("GMAIL_ADDRESS", "hello@hikagroup.co")
-GMAIL_OAUTH_CLIENT_ID = os.environ.get("GMAIL_OAUTH_CLIENT_ID")
-GMAIL_OAUTH_CLIENT_SECRET = os.environ.get("GMAIL_OAUTH_CLIENT_SECRET")
-GMAIL_OAUTH_REFRESH_TOKEN = os.environ.get("GMAIL_OAUTH_REFRESH_TOKEN")
+ZOHO_FROM_ADDRESS = os.environ.get("ZOHO_FROM_ADDRESS", "hello@hikagroup.co")
+ZOHO_ACCOUNT_ID = os.environ.get("ZOHO_ACCOUNT_ID")
+ZOHO_OAUTH_CLIENT_ID = os.environ.get("ZOHO_OAUTH_CLIENT_ID")
+ZOHO_OAUTH_CLIENT_SECRET = os.environ.get("ZOHO_OAUTH_CLIENT_SECRET")
+ZOHO_OAUTH_REFRESH_TOKEN = os.environ.get("ZOHO_OAUTH_REFRESH_TOKEN")
 
 if STRIPE_SECRET_KEY:
     stripe.api_key = STRIPE_SECRET_KEY
@@ -149,42 +150,13 @@ toolkit. Consistent practice is what moves the needle, and that's exactly what u
 <p>Warm regards,<br>The Hindi Practice PSLE Team</p>
 """
 
-WELCOME_EMAIL_TEXT = """\
-Hi {name},
-
-Welcome to Hindi Practice PSLE! You've got 50 minutes of full free access starting now — enough
-time to see exactly how this can help with PSLE Hindi prep.
-
-Here's everything unlocked during your trial:
-
-- 300+ practice questions across all 14 collections — Language Use, Cloze Comprehension,
-  Comprehension, and Vocabulary
-- Oral Practice — describe picture prompts aloud, exactly like the real PSLE oral exam
-- Practice Set — a timed, randomized mock combining every section, just like exam day
-- Review Mistakes — instantly see what went wrong and why, so every minute of practice counts
-
-Best way to spend your 50 minutes: try Practice Set first — it's the closest thing to a real PSLE
-mock exam, and will show you exactly where extra practice pays off most.
-
-When your trial ends, continuing is $11/month — less than $0.40 a day for unlimited practice across
-every section, with new content added regularly. Cancel anytime, no long-term commitment.
-
-Questions or feedback? Just reply — I read every message.
-
-Good luck with your PSLE prep!
-
-Warm regards,
-The Hindi Practice PSLE Team
-"""
-
-
-def _get_gmail_access_token():
+def _get_zoho_access_token():
     resp = requests.post(
-        "https://oauth2.googleapis.com/token",
+        "https://accounts.zoho.com/oauth/v2/token",
         data={
-            "client_id": GMAIL_OAUTH_CLIENT_ID,
-            "client_secret": GMAIL_OAUTH_CLIENT_SECRET,
-            "refresh_token": GMAIL_OAUTH_REFRESH_TOKEN,
+            "client_id": ZOHO_OAUTH_CLIENT_ID,
+            "client_secret": ZOHO_OAUTH_CLIENT_SECRET,
+            "refresh_token": ZOHO_OAUTH_REFRESH_TOKEN,
             "grant_type": "refresh_token",
         },
         timeout=10,
@@ -194,29 +166,24 @@ def _get_gmail_access_token():
 
 
 def send_welcome_email(to_email, name):
-    """Sends via the Gmail API over HTTPS rather than raw SMTP — Railway blocks outbound
+    """Sends via the Zoho Mail API over HTTPS rather than SMTP — Railway blocks outbound
     SMTP ports entirely, but HTTPS works fine (same as the Stripe/Google API calls)."""
-    if not (GMAIL_OAUTH_CLIENT_ID and GMAIL_OAUTH_CLIENT_SECRET and GMAIL_OAUTH_REFRESH_TOKEN):
+    if not (ZOHO_ACCOUNT_ID and ZOHO_OAUTH_CLIENT_ID and ZOHO_OAUTH_CLIENT_SECRET and ZOHO_OAUTH_REFRESH_TOKEN):
         return
-    import base64
-    from email.mime.multipart import MIMEMultipart
-    from email.mime.text import MIMEText
-
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = "Welcome to Hindi Practice PSLE"
-    msg["From"] = f"Hindi Practice PSLE <{GMAIL_ADDRESS}>"
-    msg["To"] = to_email
-    # Plain-text part must come first, HTML second — email clients render the last
-    # part they can handle, and having both (not HTML-only) is itself a spam-filter signal.
-    msg.attach(MIMEText(WELCOME_EMAIL_TEXT.format(name=name or "there"), "plain"))
-    msg.attach(MIMEText(WELCOME_EMAIL_HTML.format(name=name or "there"), "html"))
-
-    access_token = _get_gmail_access_token()
-    raw = base64.urlsafe_b64encode(msg.as_bytes()).decode("ascii")
+    access_token = _get_zoho_access_token()
     resp = requests.post(
-        "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
-        headers={"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"},
-        json={"raw": raw},
+        f"https://mail.zoho.com/api/accounts/{ZOHO_ACCOUNT_ID}/messages",
+        headers={
+            "Authorization": f"Zoho-oauthtoken {access_token}",
+            "Content-Type": "application/json",
+        },
+        json={
+            "fromAddress": ZOHO_FROM_ADDRESS,
+            "toAddress": to_email,
+            "subject": "Welcome to Hindi Practice PSLE",
+            "content": WELCOME_EMAIL_HTML.format(name=name or "there"),
+            "mailFormat": "html",
+        },
         timeout=15,
     )
     resp.raise_for_status()
