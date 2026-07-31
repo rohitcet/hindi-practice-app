@@ -2207,7 +2207,28 @@ function showOralDone() {
 // COMPOSITION MODE — read-only prompt display, no in-app writing capture
 // ============================================================
 let compositionTimerInterval = null;
-const COMPOSITION_SECONDS = 35 * 60;
+const COMPOSITION_SECONDS = 50 * 60;
+
+function renderCompositionPrompt(promptText){
+  // Split wherever a "Question N" heading appears, so multiple alternative prompts
+  // (the standard PSLE "answer only one of these" format) render as separate boxes
+  // with "OR" between them. A single-question prompt with no such heading is
+  // unaffected — it just renders as one box, same as before.
+  const parts = promptText.split(/(?=Question\s+\d+)/i).map(p => p.trim()).filter(Boolean);
+  // Any leading text before the first "Question N" heading is shared instructions,
+  // not an alternative — show it once, with no "OR" attached to it either side.
+  let intro = '', questionParts = parts;
+  if (parts.length && !/^Question\s+\d+/i.test(parts[0])) {
+    intro = parts[0];
+    questionParts = parts.slice(1);
+  }
+  let html = intro ? '<div class="passage-card hindi">' + fmtP(intro) + '</div>' : '';
+  questionParts.forEach((part, i) => {
+    if (i > 0) html += '<div style="text-align:center;font-weight:700;margin:14px 0;color:var(--muted)">OR</div>';
+    html += '<div class="passage-card hindi">' + fmtP(part) + '</div>';
+  });
+  return html;
+}
 
 function clearCompositionTimer(){ clearInterval(compositionTimerInterval); compositionTimerInterval = null; }
 
@@ -2233,8 +2254,8 @@ function startComposition() {
     if (el) el.textContent = m+':'+s;
   };
   content.innerHTML =
-    '<div class="progress-wrap"><div class="progress-meta"><span>Composition</span><span id="compositionTimer">35:00</span></div></div>'
-    + '<div class="passage-card hindi">' + fmtP(item.prompt) + '</div>'
+    '<div class="progress-wrap"><div class="progress-meta"><span>Composition</span><span id="compositionTimer">50:00</span></div></div>'
+    + renderCompositionPrompt(item.prompt)
     + (item.image ? '<img src="'+item.image+'" style="max-width:100%;border-radius:12px;margin:12px 0">' : '')
     + '<button class="btn-primary" onclick="goHome()" style="margin-top:16px">Back to Home</button>';
   clearCompositionTimer();
