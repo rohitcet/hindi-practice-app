@@ -134,6 +134,26 @@ def find_user_id_by_customer(stripe_customer_id):
 REQUIRED_COLLECTION_SECTIONS = {"Language Use", "Cloze Comprehension", "Comprehension", "Vocabulary"}
 
 
+def _validate_questions_list(questions, context_label):
+    """Shared q/opts/ans validation, used by both the 4 written sections and listening.questions.
+    Returns an error message string if invalid, else None."""
+    if not isinstance(questions, list) or not (3 <= len(questions) <= 25):
+        return f"{context_label} must have between 3 and 25 questions"
+    for i, q in enumerate(questions):
+        if not isinstance(q, dict):
+            return f"{context_label}, question {i + 1}: must be an object"
+        qtext = q.get("q")
+        if not isinstance(qtext, str) or not qtext.strip():
+            return f"{context_label}, question {i + 1}: missing non-empty 'q' text"
+        opts = q.get("opts")
+        if not isinstance(opts, list) or len(opts) != 4 or not all(isinstance(o, str) and o.strip() for o in opts):
+            return f"{context_label}, question {i + 1}: 'opts' must be exactly 4 non-empty strings"
+        ans = q.get("ans")
+        if not isinstance(ans, int) or isinstance(ans, bool) or not (0 <= ans <= 3):
+            return f"{context_label}, question {i + 1}: 'ans' must be an integer 0-3"
+    return None
+
+
 def _validate_collection_template(body):
     """Returns an error message string if the uploaded template is invalid, else None."""
     sections = body.get("sections")
@@ -155,21 +175,9 @@ def _validate_collection_template(body):
         passage = data.get("passage")
         if not isinstance(passage, str) or not passage.strip():
             return f"Section '{name}' is missing a non-empty 'passage'"
-        questions = data.get("questions")
-        if not isinstance(questions, list) or not (3 <= len(questions) <= 25):
-            return f"Section '{name}' must have between 3 and 25 questions"
-        for i, q in enumerate(questions):
-            if not isinstance(q, dict):
-                return f"Section '{name}', question {i + 1}: must be an object"
-            qtext = q.get("q")
-            if not isinstance(qtext, str) or not qtext.strip():
-                return f"Section '{name}', question {i + 1}: missing non-empty 'q' text"
-            opts = q.get("opts")
-            if not isinstance(opts, list) or len(opts) != 4 or not all(isinstance(o, str) and o.strip() for o in opts):
-                return f"Section '{name}', question {i + 1}: 'opts' must be exactly 4 non-empty strings"
-            ans = q.get("ans")
-            if not isinstance(ans, int) or isinstance(ans, bool) or not (0 <= ans <= 3):
-                return f"Section '{name}', question {i + 1}: 'ans' must be an integer 0-3"
+        error = _validate_questions_list(data.get("questions"), f"Section '{name}'")
+        if error:
+            return error
     return None
 
 
@@ -220,6 +228,89 @@ def _upload_oral_image(collection_key, index, img):
     )
     resp.raise_for_status()
     return f"{SUPABASE_URL}/storage/v1/object/public/oral-pictures/{filename}"
+
+
+MAX_LISTENING_AUDIO_BYTES = 10 * 1024 * 1024
+ALLOWED_AUDIO_TYPES = {"audio/mpeg": "mp3", "audio/mp4": "m4a", "audio/x-m4a": "m4a"}
+ALLOWED_AUDIO_EXTENSIONS = {"mp3", "m4a"}
+
+
+def _validate_composition(body):
+    """Optional 'composition' key: {"prompt": str}, with an optional 'composition_image' file
+    alongside it. Returns an error message or None."""
+    composition = body.get("composition")
+    if composition is None:
+        return None
+    if not isinstance(composition, dict):
+        return "'composition' must be an object"
+    prompt = composition.get("prompt")
+    if not isinstance(prompt, str) or not prompt.strip():
+        return "'composition' is missing a non-empty 'prompt'"
+    composition_image = body.get("composition_image")
+    if composition_image is not None:
+        return _validate_oral_images([composition_image])
+    return None
+
+
+def _validate_audio_file(audio, context_label):
+    """Shared validation for one base64-encoded audio file. Returns an error message or None."""
+    if not isinstance(audio, dict):
+        return f"{context_label} must be an object"
+    content_type = audio.get("content_type")
+    if content_type not in ALLOWED_AUDIO_TYPES:
+        return f"{context_label}: content_type must be audio/mpeg or audio/mp4"
+    filename = audio.get("filename") or ""
+    ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+    if ext and ext not in ALLOWED_AUDIO_EXTENSIONS:
+        return f"{context_label}: filename extension must be .mp3 or .m4a"
+    data_base64 = audio.get("data_base64")
+    if not isinstance(data_base64, str) or not data_base64:
+        return f"{context_label}: missing 'data_base64'"
+    try:
+        decoded = base64.b64decode(data_base64, validate=True)
+    except Exception:
+        return f"{context_label}: invalid base64 data"
+    if len(decoded) > MAX_LISTENING_AUDIO_BYTES:
+        return f"{context_label}: exceeds {MAX_LISTENING_AUDIO_BYTES // (1024 * 1024)}MB limit"
+    return None
+
+
+def _validate_listening(body):
+    """Optional 'listening' key: {"questions": [...]}, requires 'listening_audio' alongside it.
+    Returns an error message or None."""
+    listening = body.get("listening")
+    if listening is None:
+        return None
+    if not isinstance(listening, dict):
+        return "'listening' must be an object"
+    error = _validate_questions_list(listening.get("questions"), "'listening'")
+    if error:
+        return error
+    audio = body.get("listening_audio")
+    if audio is None:
+        return "'listening' requires a 'listening_audio' file to go with it"
+    return _validate_audio_file(audio, "'listening_audio'")
+
+
+def _upload_audio(collection_key, audio):
+    """Uploads one base64-encoded audio file to Supabase Storage, returns its public URL."""
+    content_type = audio["content_type"]
+    ext = ALLOWED_AUDIO_TYPES[content_type]
+    decoded = base64.b64decode(audio["data_base64"], validate=True)
+    filename = f"{collection_key}.{ext}"
+    resp = requests.post(
+        f"{SUPABASE_URL}/storage/v1/object/listening-audio/{filename}",
+        headers={
+            "apikey": SUPABASE_SECRET_KEY,
+            "Authorization": f"Bearer {SUPABASE_SECRET_KEY}",
+            "Content-Type": content_type,
+            "x-upsert": "true",
+        },
+        data=decoded,
+        timeout=30,
+    )
+    resp.raise_for_status()
+    return f"{SUPABASE_URL}/storage/v1/object/public/listening-audio/{filename}"
 
 
 WELCOME_EMAIL_HTML = """\
@@ -677,6 +768,16 @@ class ProxyHandler(BaseHTTPRequestHandler):
             self._json_response(400, {"error": error})
             return
 
+        error = _validate_composition(body)
+        if error:
+            self._json_response(400, {"error": error})
+            return
+
+        error = _validate_listening(body)
+        if error:
+            self._json_response(400, {"error": error})
+            return
+
         try:
             resp = requests.get(
                 f"{SUPABASE_URL}/rest/v1/collections",
@@ -695,6 +796,22 @@ class ProxyHandler(BaseHTTPRequestHandler):
                 url = _upload_oral_image(collection_key, i, img)
                 oral_pictures.append({"img": url})
 
+            composition = body.get("composition")
+            composition_row = None
+            if composition:
+                composition_row = {"prompt": composition["prompt"], "image": None}
+                composition_image = body.get("composition_image")
+                if composition_image:
+                    composition_row["image"] = _upload_oral_image(
+                        f"{collection_key}_composition", 0, composition_image
+                    )
+
+            listening = body.get("listening")
+            listening_row = None
+            if listening:
+                audio_url = _upload_audio(collection_key, body["listening_audio"])
+                listening_row = {"audio_url": audio_url, "questions": listening["questions"]}
+
             insert_resp = requests.post(
                 f"{SUPABASE_URL}/rest/v1/collections",
                 headers={**_supabase_headers(), "Prefer": "return=minimal"},
@@ -704,6 +821,8 @@ class ProxyHandler(BaseHTTPRequestHandler):
                     "title": body.get("title") or f"Collection {next_number}",
                     "sections": body["sections"],
                     "oral_pictures": oral_pictures,
+                    "composition": composition_row,
+                    "listening": listening_row,
                 },
                 timeout=15,
             )
@@ -713,6 +832,8 @@ class ProxyHandler(BaseHTTPRequestHandler):
                 "collection_key": collection_key,
                 "collection_number": next_number,
                 "oral_image_count": len(oral_pictures),
+                "composition_uploaded": composition_row is not None,
+                "listening_uploaded": listening_row is not None,
             })
         except Exception as e:
             traceback.print_exc()

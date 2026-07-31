@@ -481,6 +481,8 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
       
       <div class="mode-card" onclick="selectMode(this,'oral')"><div class="icon">🎤</div><h3>Oral practice</h3><p>Describe pictures aloud, up to 5 minutes each — send recordings in for personalized feedback (A4 oral)</p><div class="check">&#10003;</div></div>
       <div class="mode-card" onclick="selectMode(this,'vocabulary')"><div class="icon">&#11088;</div><h3>Vocabulary</h3><p>Synonyms &amp; word meanings</p><div class="check">&#10003;</div></div>
+      <div class="mode-card" onclick="selectMode(this,'composition')"><div class="icon">&#128221;</div><h3>Composition</h3><p>View a writing prompt &amp; picture, write your response on paper</p><div class="check">&#10003;</div></div>
+      <div class="mode-card" onclick="selectMode(this,'listening')"><div class="icon">&#127911;</div><h3>Listening practice</h3><p>Listen to an audio passage, answer comprehension questions</p><div class="check">&#10003;</div></div>
       <div class="mode-card" onclick="selectMode(this,'practiceset')"><div class="icon">&#127919;</div><h3>Practice Set</h3><p>Timed mix: 5 language, 2 cloze, 5 vocabulary + 1 oral, from all collections</p><div class="check">&#10003;</div></div>
     </div>
     <p class="section-title">Select collection</p>
@@ -494,6 +496,7 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
       <div class="progress-meta"><span id="progText">Question 1</span><span id="progPct">0%</span></div>
       <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
     </div>
+    <audio id="quizAudioPlayer" controls style="display:none;width:100%;margin-bottom:16px"></audio>
     <div id="quizContent"></div>
   </div>
   <div id="doneScreen" style="display:none">
@@ -546,6 +549,10 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
       <textarea id="collectionTemplateInput" class="modal-input" rows="10" placeholder="Paste your filled-in JSON template here..." style="width:100%;font-family:monospace;font-size:12px;min-height:180px;margin-bottom:14px;box-sizing:border-box"></textarea>
       <label style="display:block;margin-bottom:6px;font-size:13px;font-weight:600">Oral practice pictures (optional, up to 10 images)</label>
       <input type="file" id="collectionOralImages" accept="image/jpeg,image/png" multiple style="margin-bottom:14px;display:block">
+      <label style="display:block;margin-bottom:6px;font-size:13px;font-weight:600">Composition stimulus image (optional, requires a "composition" key in the JSON above)</label>
+      <input type="file" id="collectionCompositionImage" accept="image/jpeg,image/png" style="margin-bottom:14px;display:block">
+      <label style="display:block;margin-bottom:6px;font-size:13px;font-weight:600">Listening audio (optional, requires a "listening" key in the JSON above)</label>
+      <input type="file" id="collectionListeningAudio" accept="audio/mpeg,audio/mp4,.mp3,.m4a" style="margin-bottom:14px;display:block">
       <button class="btn-primary" onclick="submitNewCollection()" id="submitCollectionBtn">Upload Collection</button>
       <div id="collectionUploadStatus" style="margin-top:12px;font-size:13px"></div>
     </div>
@@ -577,6 +584,12 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
       <div class="progress-bar"><div class="progress-fill" id="oralProgFill" style="width:0%"></div></div>
     </div>
     <div id="oralContent"></div>
+  </div>
+</div>
+
+<div id="compositionScreen" style="display:none">
+  <div style="max-width:720px;margin:0 auto">
+    <div id="compositionContent"></div>
   </div>
 </div>
 
@@ -922,6 +935,8 @@ questions:[
 const STATIC_COLLECTION_ORDER=['2012','2013','2014','2015','2016','2018','2019','2020','2021','2022','2023','2024','2025'];
 let MERGED_DB = {...DB};
 let MERGED_ORAL_PICTURES = [];
+let MERGED_COMPOSITIONS = [];
+let MERGED_LISTENING = [];
 let COLLECTION_ORDER = [...STATIC_COLLECTION_ORDER];
 let COLLECTION_LABELS = {};
 STATIC_COLLECTION_ORDER.forEach((k,i)=>COLLECTION_LABELS[k]=i+1);
@@ -936,18 +951,23 @@ async function loadCollections(){
   // the static baseline first so repeat calls don't accumulate duplicate entries.
   MERGED_DB = {...DB};
   MERGED_ORAL_PICTURES = [...ORAL_PICTURES];
+  MERGED_COMPOSITIONS = [];
+  MERGED_LISTENING = [];
   COLLECTION_ORDER = [...STATIC_COLLECTION_ORDER];
   COLLECTION_LABELS = {};
   STATIC_COLLECTION_ORDER.forEach((k,i)=>COLLECTION_LABELS[k]=i+1);
   try {
-    const { data: rows } = await sb.from('collections')
-      .select('collection_key,collection_number,title,sections,oral_pictures')
+    const { data: rows, error } = await sb.from('collections')
+      .select('collection_key,collection_number,title,sections,oral_pictures,composition,listening')
       .order('collection_number', { ascending: true });
+    if (error) throw error;
     (rows||[]).forEach(row => {
       MERGED_DB[row.collection_key] = row.sections;
       COLLECTION_ORDER.push(row.collection_key);
       COLLECTION_LABELS[row.collection_key] = row.collection_number;
       (row.oral_pictures||[]).forEach(p => MERGED_ORAL_PICTURES.push({img:p.img, year:row.collection_key}));
+      if (row.composition) MERGED_COMPOSITIONS.push({prompt:row.composition.prompt, image:row.composition.image, year:row.collection_key});
+      if (row.listening) MERGED_LISTENING.push({audioUrl:row.listening.audio_url, questions:row.listening.questions, year:row.collection_key});
     });
   } catch(e) { console.warn('loadCollections failed, using static content only', e); }
   renderCollectionPills();
@@ -1102,6 +1122,16 @@ function toggleYear(el,year){
   }
 }
 function buildQ(){
+  if(selectedMode==='listening'){
+    const yrs=selectedYears.includes('all')?null:selectedYears;
+    const res=[];
+    // Not shuffled — questions from the same passage must stay grouped so the audio
+    // player (which persists across Next/Prev) doesn't jump between recordings.
+    MERGED_LISTENING.filter(l=>!yrs||yrs.includes(l.year)).forEach(l=>{
+      l.questions.forEach(q=>res.push({year:l.year,section:'Listening',passage:'',audioUrl:l.audioUrl,...q}));
+    });
+    return res;
+  }
   const res=[];
   const yrs=selectedYears.includes('all')?Object.keys(MERGED_DB):selectedYears;
   yrs.forEach(yr=>{
@@ -1160,11 +1190,18 @@ function renderQ(){
   const isL=current===questions.length-1;
   const bk=current>0?'<button class="btn-secondary" onclick="prevQ()">&#8592; Back</button>':'<button class="btn-secondary" disabled>&#8592; Back</button>';
   const nx=prev!==undefined?'<button class="btn-primary" onclick="nextQ()">'+(isL?'Finish &#10003;':'Next &#8594;')+'</button>':'<button class="btn-secondary" onclick="skipQ()">'+(isL?'Finish &#8594;':'Skip &#8594;')+'</button>';
+  const audioEl=document.getElementById('quizAudioPlayer');
+  if(q.audioUrl){
+    audioEl.style.display='block';
+    if(audioEl.dataset.url!==q.audioUrl){audioEl.src=q.audioUrl;audioEl.dataset.url=q.audioUrl;}
+  }else{
+    audioEl.style.display='none';
+  }
   document.getElementById('quizContent').innerHTML=
     '<div class="q-meta"><span class="tag tag-year">Collection '+(COLLECTION_LABELS[q.year]||q.year)+'</span><span class="tag tag-section">'+q.section+'</span><span class="tag tag-timer" id="qTimer"></span></div>'+
-    '<div class="passage-card hindi">'+fmtP(q.passage)+'</div>'+
+    (q.passage?'<div class="passage-card hindi">'+fmtP(q.passage)+'</div>':'')+
     '<div class="q-card"><div class="q-number">Question '+(current+1)+'</div><div class="q-text hindi">'+q.q+'</div><div class="options">'+opH+'</div>'+fbH+'<div class="btn-row" id="btnRow">'+bk+nx+'</div></div>';
-  if (prev === undefined) { startQuestionTimer(q); } else { clearQuestionTimer(); }
+  if (selectedMode!=='listening' && prev === undefined) { startQuestionTimer(q); } else { clearQuestionTimer(); }
 }
 function fmtP(p){return p.replace(/\[(\d+)\]/g,'<span class="blank-hl">___$1___</span>');}
 function selOpt(i){
@@ -1235,11 +1272,14 @@ function restartQuiz(){document.getElementById('doneScreen').style.display='none
 function goHome(){
   clearQuestionTimer();
   clearPracticeSetTimer();
+  clearCompositionTimer();
+  document.getElementById('quizAudioPlayer').pause();
   practiceSetActive = false;
   document.getElementById('practiceSetTimer').style.display = 'none';
   document.getElementById('doneScreen').style.display='none';
   document.getElementById('quizScreen').style.display='none';
   document.getElementById('oralScreen').style.display='none';
+  document.getElementById('compositionScreen').style.display='none';
   document.getElementById('homeScreen').style.display='block';
   document.getElementById('headerScore').style.display='none';
   document.getElementById('homeBtn').style.display='none';
@@ -1572,9 +1612,10 @@ function startTrialWatch(){
 function forceExpireToPaywall(){
   clearQuestionTimer();
   clearPracticeSetTimer();
+  clearCompositionTimer();
   practiceSetActive = false;
   document.getElementById('practiceSetTimer').style.display = 'none';
-  ['homeScreen','quizScreen','doneScreen','oralScreen'].forEach(id => document.getElementById(id).style.display = 'none');
+  ['homeScreen','quizScreen','doneScreen','oralScreen','compositionScreen'].forEach(id => document.getElementById(id).style.display = 'none');
   document.getElementById('headerScore').style.display = 'none';
   document.getElementById('homeBtn').style.display = 'none';
   showPaywallScreen();
@@ -1624,11 +1665,12 @@ function resetToLoginScreen() {
   currentUser = null;
   currentProfile = null;
   clearInterval(trialWatchInterval);
+  clearCompositionTimer();
   updateUpgradeUI();
   document.getElementById('userBar').style.display = 'none';
   document.getElementById('headerScore').style.display = 'none';
   document.getElementById('homeBtn').style.display = 'none';
-  ['homeScreen','quizScreen','doneScreen','oralScreen','adminScreen','paywallScreen'].forEach(id => {
+  ['homeScreen','quizScreen','doneScreen','oralScreen','compositionScreen','adminScreen','paywallScreen'].forEach(id => {
     document.getElementById(id).style.display = 'none';
   });
   updateLoginScreenPromoCopy();
@@ -1679,7 +1721,8 @@ function adminLogout() {
   document.getElementById('loginScreen').style.display = 'flex';
 }
 function showAdminDashboard() {
-  ['homeScreen','quizScreen','doneScreen','oralScreen'].forEach(id => document.getElementById(id).style.display = 'none');
+  clearCompositionTimer();
+  ['homeScreen','quizScreen','doneScreen','oralScreen','compositionScreen'].forEach(id => document.getElementById(id).style.display = 'none');
   document.getElementById('adminScreen').style.display = 'block';
   refreshAdminData();
 }
@@ -1758,7 +1801,10 @@ const COLLECTION_TEMPLATE_EXAMPLE = {
         { q: "Example question 3?", opts: ["Option A","Option B","Option C","Option D"], ans: 2 }
       ]
     }
-  }
+  },
+  // Both of these are OPTIONAL — delete either key entirely if this collection doesn't have it.
+  // "composition": {"prompt": "Write about a memorable family outing..."},  // attach an image via the file input below if you have one
+  // "listening": {"questions": [{"q":"Example question?","opts":["A","B","C","D"],"ans":0}]}  // attach the audio file via the file input below — required together with this key
 };
 function downloadCollectionTemplate(){
   const blob = new Blob([JSON.stringify(COLLECTION_TEMPLATE_EXAMPLE, null, 2)], {type:'application/json'});
@@ -1794,7 +1840,7 @@ function confirmAdminSecret(){
   document.getElementById('adminSecretInput').value = '';
   const pending = pendingCollectionUpload;
   pendingCollectionUpload = null;
-  if (pending) doUploadCollection(pending.parsed, pending.oral_images);
+  if (pending) doUploadCollection(pending.parsed, pending.oral_images, pending.composition_image, pending.listening_audio);
 }
 async function submitNewCollection(){
   const statusEl = document.getElementById('collectionUploadStatus');
@@ -1811,28 +1857,36 @@ async function submitNewCollection(){
   }
 
   const files = document.getElementById('collectionOralImages').files;
-  let oral_images;
+  const compositionFile = document.getElementById('collectionCompositionImage').files[0];
+  const listeningFile = document.getElementById('collectionListeningAudio').files[0];
+  let oral_images, composition_image, listening_audio;
   try {
     oral_images = await Promise.all(Array.from(files).map(async f => ({
       filename: f.name,
       content_type: f.type,
       data_base64: await fileToBase64(f)
     })));
+    composition_image = compositionFile ? {
+      filename: compositionFile.name, content_type: compositionFile.type, data_base64: await fileToBase64(compositionFile)
+    } : null;
+    listening_audio = listeningFile ? {
+      filename: listeningFile.name, content_type: listeningFile.type, data_base64: await fileToBase64(listeningFile)
+    } : null;
   } catch(e) {
     statusEl.style.color = '#D0021B';
-    statusEl.textContent = 'Failed to read image file(s) — ' + e.message;
+    statusEl.textContent = 'Failed to read file(s) — ' + e.message;
     return;
   }
 
   if (!adminSecretCache) {
-    pendingCollectionUpload = { parsed, oral_images };
+    pendingCollectionUpload = { parsed, oral_images, composition_image, listening_audio };
     document.getElementById('adminSecretModal').style.display = 'flex';
     setTimeout(() => document.getElementById('adminSecretInput').focus(), 100);
     return;
   }
-  await doUploadCollection(parsed, oral_images);
+  await doUploadCollection(parsed, oral_images, composition_image, listening_audio);
 }
-async function doUploadCollection(parsed, oral_images){
+async function doUploadCollection(parsed, oral_images, composition_image, listening_audio){
   const statusEl = document.getElementById('collectionUploadStatus');
   const btn = document.getElementById('submitCollectionBtn');
   btn.disabled = true;
@@ -1841,7 +1895,7 @@ async function doUploadCollection(parsed, oral_images){
     const resp = await fetch('/admin/upload-collection', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Admin-Secret': adminSecretCache },
-      body: JSON.stringify({ ...parsed, oral_images })
+      body: JSON.stringify({ ...parsed, oral_images, composition_image, listening_audio })
     });
     const result = await resp.json();
     if (!resp.ok) {
@@ -1851,10 +1905,13 @@ async function doUploadCollection(parsed, oral_images){
       return;
     }
     statusEl.style.color = '#0B8043';
-    statusEl.textContent = 'Uploaded as Collection ' + result.collection_number + ' (' + result.oral_image_count + ' image(s)).';
+    statusEl.textContent = 'Uploaded as Collection ' + result.collection_number + ' (' + result.oral_image_count + ' oral image(s), '
+      + (result.composition_uploaded ? '1' : '0') + ' composition, ' + (result.listening_uploaded ? '1' : '0') + ' listening passage).';
     toast('Uploaded as Collection ' + result.collection_number);
     document.getElementById('collectionTemplateInput').value = '';
     document.getElementById('collectionOralImages').value = '';
+    document.getElementById('collectionCompositionImage').value = '';
+    document.getElementById('collectionListeningAudio').value = '';
     await loadCollections();
   } catch(e) {
     statusEl.style.color = '#D0021B';
@@ -2146,10 +2203,53 @@ function showOralDone() {
   document.getElementById('doneSK').textContent = '—';
 }
 
-// Hook oral mode into startQuiz
+// ============================================================
+// COMPOSITION MODE — read-only prompt display, no in-app writing capture
+// ============================================================
+let compositionTimerInterval = null;
+const COMPOSITION_SECONDS = 35 * 60;
+
+function clearCompositionTimer(){ clearInterval(compositionTimerInterval); compositionTimerInterval = null; }
+
+function startComposition() {
+  const yrs = selectedYears.includes('all') ? null : selectedYears;
+  let pool = MERGED_COMPOSITIONS.filter(c => !yrs || yrs.includes(c.year));
+  document.getElementById('homeScreen').style.display = 'none';
+  document.getElementById('compositionScreen').style.display = 'block';
+  document.getElementById('headerScore').style.display = 'none';
+  document.getElementById('homeBtn').style.display = 'flex';
+  const content = document.getElementById('compositionContent');
+  if (!pool.length) {
+    content.innerHTML = '<div class="passage-card hindi"><p>No composition prompts available yet for the selected collection(s) — check back soon, or try "All collections".</p></div>'
+      + '<button class="btn-primary" onclick="goHome()" style="margin-top:16px">Back to Home</button>';
+    return;
+  }
+  const item = shuf([...pool])[0];
+  let remaining = COMPOSITION_SECONDS;
+  const renderTimer = () => {
+    const m = String(Math.floor(remaining/60)).padStart(2,'0');
+    const s = String(remaining%60).padStart(2,'0');
+    const el = document.getElementById('compositionTimer');
+    if (el) el.textContent = m+':'+s;
+  };
+  content.innerHTML =
+    '<div class="progress-wrap"><div class="progress-meta"><span>Composition</span><span id="compositionTimer">35:00</span></div></div>'
+    + '<div class="passage-card hindi">' + fmtP(item.prompt) + '</div>'
+    + (item.image ? '<img src="'+item.image+'" style="max-width:100%;border-radius:12px;margin:12px 0">' : '')
+    + '<button class="btn-primary" onclick="goHome()" style="margin-top:16px">Back to Home</button>';
+  clearCompositionTimer();
+  compositionTimerInterval = setInterval(() => {
+    remaining--;
+    if (remaining <= 0) { remaining = 0; clearCompositionTimer(); }
+    renderTimer();
+  }, 1000);
+}
+
+// Hook oral/composition modes into startQuiz
 const _origStart = startQuiz;
 window.startQuiz = function() {
   if (selectedMode === 'oral') { startOralPractice(); return; }
+  if (selectedMode === 'composition') { startComposition(); return; }
   if (selectedMode === 'practiceset') { startPracticeSet(); return; }
   _origStart();
 };
