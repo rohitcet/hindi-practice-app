@@ -410,6 +410,18 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
   </div>
 </div>
 
+<div class="modal-overlay" id="adminSecretModal" style="display:none" onclick="if(event.target===this)closeAdminSecretModal()">
+  <div class="modal-box">
+    <h3>&#128272; Admin Secret</h3>
+    <p>Enter the server admin secret to upload this collection.</p>
+    <input class="modal-input" type="password" id="adminSecretInput" placeholder="Admin secret" onkeydown="if(event.key==='Enter')confirmAdminSecret()">
+    <div class="modal-btns">
+      <button class="btn-primary" onclick="confirmAdminSecret()">Confirm</button>
+      <button class="btn-secondary" onclick="closeAdminSecretModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <main>
   <div id="homeScreen">
     <div class="national-day-banner" id="nationalDayBanner" style="display:none">
@@ -453,9 +465,9 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
       <h2 class="hindi">&#2309;&#2349;&#2381;&#2351;&#2366;&#2360; &#2325;&#2352;&#2375;&#2306;, &#2310;&#2327;&#2375; &#2348;&#2397;&#2375;&#2306;!</h2>
       <p>Practice makes perfect &middot; PSLE Hindi preparation</p>
       <div class="hero-stats">
-        <div class="hero-stat"><div class="n">300+</div><div class="l">Questions</div></div>
+        <div class="hero-stat"><div class="n" id="heroStatQuestions">&hellip;</div><div class="l">Questions</div></div>
         <div class="hero-stat-div"></div>
-        <div class="hero-stat"><div class="n">14</div><div class="l">Collections</div></div>
+        <div class="hero-stat"><div class="n" id="heroStatCollections">&hellip;</div><div class="l">Collections</div></div>
         <div class="hero-stat-div"></div>
         <div class="hero-stat"><div class="n">5</div><div class="l">Sections</div></div>
       </div>
@@ -474,20 +486,6 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
     <p class="section-title">Select collection</p>
     <div class="year-grid" id="yearGrid">
       <button class="year-btn active" onclick="toggleYear(this,'all')">All</button>
-     <button class="year-btn" onclick="toggleYear(this,'2012')">1 </button>
-      <button class="year-btn" onclick="toggleYear(this,'2013')">2 </button>
-      <button class="year-btn" onclick="toggleYear(this,'2014')">3 </button>
-      <button class="year-btn" onclick="toggleYear(this,'2015')">4 </button>
-      <button class="year-btn" onclick="toggleYear(this,'2016')">5 </button>
-      <button class="year-btn" onclick="toggleYear(this,'2017')">6 </button>
-      <button class="year-btn" onclick="toggleYear(this,'2018')">7 </button>
-      <button class="year-btn" onclick="toggleYear(this,'2019')">8 </button>
-      <button class="year-btn" onclick="toggleYear(this,'2020')">9 </button>
-      <button class="year-btn" onclick="toggleYear(this,'2021')">10 </button>
-      <button class="year-btn" onclick="toggleYear(this,'2022')">11 </button>
-      <button class="year-btn" onclick="toggleYear(this,'2023')">12 </button>
-      <button class="year-btn" onclick="toggleYear(this,'2024')">13 </button>
-      <button class="year-btn" onclick="toggleYear(this,'2025')">14 </button>
     </div>
     <button class="btn-start" onclick="startQuiz()">Start Quiz &#8594;</button>
   </div>
@@ -539,6 +537,17 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
         <li>In <strong>console.cloud.google.com</strong>, add authorised redirect URI: your Supabase project URL + <code>/auth/v1/callback</code></li>
         <li>In Supabase → Authentication → URL Configuration, add your app's URL as a redirect URL</li>
       </ol>
+    </div>
+    <div class="setup-card">
+      <h4>&#128218; Add New Practice Collection</h4>
+      <p style="margin-bottom:12px;color:var(--muted);font-size:13px">Upload a new collection using the JSON template below. It goes live immediately &mdash; no app update needed.</p>
+      <button class="btn-secondary" onclick="downloadCollectionTemplate()" style="margin-bottom:14px">&#11015; Download JSON template</button>
+      <label style="display:block;margin-bottom:6px;font-size:13px;font-weight:600">Filled-in template (JSON)</label>
+      <textarea id="collectionTemplateInput" class="modal-input" rows="10" placeholder="Paste your filled-in JSON template here..." style="width:100%;font-family:monospace;font-size:12px;min-height:180px;margin-bottom:14px;box-sizing:border-box"></textarea>
+      <label style="display:block;margin-bottom:6px;font-size:13px;font-weight:600">Oral practice pictures (optional, up to 10 images)</label>
+      <input type="file" id="collectionOralImages" accept="image/jpeg,image/png" multiple style="margin-bottom:14px;display:block">
+      <button class="btn-primary" onclick="submitNewCollection()" id="submitCollectionBtn">Upload Collection</button>
+      <div id="collectionUploadStatus" style="margin-top:12px;font-size:13px"></div>
     </div>
     <div class="admin-grid">
       <div class="admin-stat"><div class="n" id="adTotalUsers">0</div><div class="l">Registered users</div></div>
@@ -908,7 +917,56 @@ questions:[
 {q:"'आरंभ' का समान अर्थ:",opts:["अंत","शुरुआत","समापन","विराम"],ans:1}]}}
 };
 
-const YEAR_TO_COLLECTION={'2012':1,'2013':2,'2014':3,'2015':4,'2016':5,'2017':6,'2018':7,'2019':8,'2020':9,'2021':10,'2022':11,'2023':12,'2024':13,'2025':14};
+// '2017' intentionally excluded — this collection had no content (a pre-existing gap), so it's
+// removed entirely rather than shipping a numbered-but-empty slot.
+const STATIC_COLLECTION_ORDER=['2012','2013','2014','2015','2016','2018','2019','2020','2021','2022','2023','2024','2025'];
+let MERGED_DB = {...DB};
+let MERGED_ORAL_PICTURES = [];
+let COLLECTION_ORDER = [...STATIC_COLLECTION_ORDER];
+let COLLECTION_LABELS = {};
+STATIC_COLLECTION_ORDER.forEach((k,i)=>COLLECTION_LABELS[k]=i+1);
+let collectionsLoadedPromise = null;
+
+// ============================================================
+// ADMIN-UPLOADED COLLECTIONS — fetched once at startup and merged with the
+// static DB/ORAL_PICTURES above, so new collections need no code deploy.
+// ============================================================
+async function loadCollections(){
+  // Safe to call more than once (the admin upload flow re-runs this to refresh live) — reset to
+  // the static baseline first so repeat calls don't accumulate duplicate entries.
+  MERGED_DB = {...DB};
+  MERGED_ORAL_PICTURES = [...ORAL_PICTURES];
+  COLLECTION_ORDER = [...STATIC_COLLECTION_ORDER];
+  COLLECTION_LABELS = {};
+  STATIC_COLLECTION_ORDER.forEach((k,i)=>COLLECTION_LABELS[k]=i+1);
+  try {
+    const { data: rows } = await sb.from('collections')
+      .select('collection_key,collection_number,title,sections,oral_pictures')
+      .order('collection_number', { ascending: true });
+    (rows||[]).forEach(row => {
+      MERGED_DB[row.collection_key] = row.sections;
+      COLLECTION_ORDER.push(row.collection_key);
+      COLLECTION_LABELS[row.collection_key] = row.collection_number;
+      (row.oral_pictures||[]).forEach(p => MERGED_ORAL_PICTURES.push({img:p.img, year:row.collection_key}));
+    });
+  } catch(e) { console.warn('loadCollections failed, using static content only', e); }
+  renderCollectionPills();
+  updateHeroStats();
+}
+function renderCollectionPills(){
+  const grid = document.getElementById('yearGrid');
+  const extra = COLLECTION_ORDER.map(key =>
+    `<button class="year-btn" onclick="toggleYear(this,'${key}')">${COLLECTION_LABELS[key]}</button>`
+  ).join('');
+  grid.innerHTML = '<button class="year-btn active" onclick="toggleYear(this,\'all\')">All</button>' + extra;
+}
+function updateHeroStats(){
+  let qCount = 0;
+  Object.values(MERGED_DB).forEach(sections => Object.values(sections).forEach(s => qCount += s.questions.length));
+  document.getElementById('heroStatQuestions').textContent = qCount + '+';
+  document.getElementById('heroStatCollections').textContent = COLLECTION_ORDER.length;
+}
+
 let selectedMode='all',selectedYears=['all'],questions=[],current=0;
 let answered=false,correct=0,wrong=0,answers={};
 
@@ -975,7 +1033,7 @@ function startPracticeSetTimer(totalSeconds){
 }
 function buildPracticeSetQuestions(){
   const buckets = { languageuse: [], clozecomprehension: [], vocabulary: [] };
-  Object.entries(DB).forEach(([yr, sections]) => {
+  Object.entries(MERGED_DB).forEach(([yr, sections]) => {
     Object.entries(sections).forEach(([sec, data]) => {
       const st = sec.toLowerCase().replace(/[^a-z]/g,'');
       const items = data.questions.map(q => ({year:yr, section:sec, passage:data.passage, ...q}));
@@ -991,7 +1049,7 @@ function startPracticeSet(){
   const mcq = buildPracticeSetQuestions();
   if (!mcq.length) { toast('Not enough questions available.'); return; }
   practiceSetActive = true;
-  practiceSetOralPic = shuf(ORAL_PICTURES)[0];
+  practiceSetOralPic = shuf(MERGED_ORAL_PICTURES)[0];
   questions = mcq;
   current=0; correct=0; wrong=0; answered=false; answers={};
   updH();
@@ -1045,10 +1103,10 @@ function toggleYear(el,year){
 }
 function buildQ(){
   const res=[];
-  const yrs=selectedYears.includes('all')?Object.keys(DB):selectedYears;
+  const yrs=selectedYears.includes('all')?Object.keys(MERGED_DB):selectedYears;
   yrs.forEach(yr=>{
-    if(!DB[yr])return;
-    Object.entries(DB[yr]).forEach(([sec,data])=>{
+    if(!MERGED_DB[yr])return;
+    Object.entries(MERGED_DB[yr]).forEach(([sec,data])=>{
       const st=sec.toLowerCase().replace(/[^a-z]/g,'');
       const inc=selectedMode==='all'||
         (selectedMode==='language'&&st.includes('language'))||
@@ -1103,7 +1161,7 @@ function renderQ(){
   const bk=current>0?'<button class="btn-secondary" onclick="prevQ()">&#8592; Back</button>':'<button class="btn-secondary" disabled>&#8592; Back</button>';
   const nx=prev!==undefined?'<button class="btn-primary" onclick="nextQ()">'+(isL?'Finish &#10003;':'Next &#8594;')+'</button>':'<button class="btn-secondary" onclick="skipQ()">'+(isL?'Finish &#8594;':'Skip &#8594;')+'</button>';
   document.getElementById('quizContent').innerHTML=
-    '<div class="q-meta"><span class="tag tag-year">Collection '+(YEAR_TO_COLLECTION[q.year]||q.year)+'</span><span class="tag tag-section">'+q.section+'</span><span class="tag tag-timer" id="qTimer"></span></div>'+
+    '<div class="q-meta"><span class="tag tag-year">Collection '+(COLLECTION_LABELS[q.year]||q.year)+'</span><span class="tag tag-section">'+q.section+'</span><span class="tag tag-timer" id="qTimer"></span></div>'+
     '<div class="passage-card hindi">'+fmtP(q.passage)+'</div>'+
     '<div class="q-card"><div class="q-number">Question '+(current+1)+'</div><div class="q-text hindi">'+q.q+'</div><div class="options">'+opH+'</div>'+fbH+'<div class="btn-row" id="btnRow">'+bk+nx+'</div></div>';
   if (prev === undefined) { startQuestionTimer(q); } else { clearQuestionTimer(); }
@@ -1160,7 +1218,7 @@ function buildMistakesReview(){
   container.style.display='block';
   list.innerHTML=mistakes.map(m=>
     '<div class="mistake-card hindi'+(m.a.skipped?' skipped':'')+'">'+
-      '<div class="mistake-meta">Collection '+(YEAR_TO_COLLECTION[m.q.year]||m.q.year)+' &middot; '+m.q.section+'</div>'+
+      '<div class="mistake-meta">Collection '+(COLLECTION_LABELS[m.q.year]||m.q.year)+' &middot; '+m.q.section+'</div>'+
       '<div class="mistake-q">'+(m.idx+1)+'. '+m.q.q+'</div>'+
       (m.a.skipped
         ? '<div class="mistake-ans">&#8212; Skipped</div>'
@@ -1423,6 +1481,7 @@ async function checkAccessAndShowScreen(retriesLeft) {
   const hasAccess = !!profile && (unlimited || (Date.now() - new Date(profile.trial_started_at).getTime()) < TRIAL_MS);
 
   if (hasAccess) {
+    if (collectionsLoadedPromise) await collectionsLoadedPromise;
     showScreenAfterLogin();
     if (!unlimited) startTrialWatch(); else clearInterval(trialWatchInterval);
     updateUpgradeUI();
@@ -1662,6 +1721,151 @@ function refreshAdminData() {
 }
 
 // ============================================================
+// ADMIN — Add Collection
+// ============================================================
+const COLLECTION_TEMPLATE_EXAMPLE = {
+  title: "Collection 15",
+  sections: {
+    "Language Use": {
+      passage: "",
+      questions: [
+        { q: "Example question 1?", opts: ["Option A","Option B","Option C","Option D"], ans: 0 },
+        { q: "Example question 2?", opts: ["Option A","Option B","Option C","Option D"], ans: 1 },
+        { q: "Example question 3?", opts: ["Option A","Option B","Option C","Option D"], ans: 2 }
+      ]
+    },
+    "Cloze Comprehension": {
+      passage: "Passage text with blanks goes here...",
+      questions: [
+        { q: "Example question 1?", opts: ["Option A","Option B","Option C","Option D"], ans: 0 },
+        { q: "Example question 2?", opts: ["Option A","Option B","Option C","Option D"], ans: 1 },
+        { q: "Example question 3?", opts: ["Option A","Option B","Option C","Option D"], ans: 2 }
+      ]
+    },
+    "Comprehension": {
+      passage: "Full passage text goes here...",
+      questions: [
+        { q: "Example question 1?", opts: ["Option A","Option B","Option C","Option D"], ans: 0 },
+        { q: "Example question 2?", opts: ["Option A","Option B","Option C","Option D"], ans: 1 },
+        { q: "Example question 3?", opts: ["Option A","Option B","Option C","Option D"], ans: 2 }
+      ]
+    },
+    "Vocabulary": {
+      passage: "",
+      questions: [
+        { q: "Example question 1?", opts: ["Option A","Option B","Option C","Option D"], ans: 0 },
+        { q: "Example question 2?", opts: ["Option A","Option B","Option C","Option D"], ans: 1 },
+        { q: "Example question 3?", opts: ["Option A","Option B","Option C","Option D"], ans: 2 }
+      ]
+    }
+  }
+};
+function downloadCollectionTemplate(){
+  const blob = new Blob([JSON.stringify(COLLECTION_TEMPLATE_EXAMPLE, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'collection-template.json';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+let adminSecretCache = null;
+let pendingCollectionUpload = null;
+function fileToBase64(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+function closeAdminSecretModal(){
+  document.getElementById('adminSecretModal').style.display = 'none';
+  document.getElementById('adminSecretInput').value = '';
+  pendingCollectionUpload = null;
+}
+function confirmAdminSecret(){
+  const val = document.getElementById('adminSecretInput').value;
+  if (!val) return;
+  adminSecretCache = val;
+  document.getElementById('adminSecretModal').style.display = 'none';
+  document.getElementById('adminSecretInput').value = '';
+  const pending = pendingCollectionUpload;
+  pendingCollectionUpload = null;
+  if (pending) doUploadCollection(pending.parsed, pending.oral_images);
+}
+async function submitNewCollection(){
+  const statusEl = document.getElementById('collectionUploadStatus');
+  statusEl.style.color = '';
+  statusEl.textContent = '';
+
+  let parsed;
+  try {
+    parsed = JSON.parse(document.getElementById('collectionTemplateInput').value);
+  } catch(e) {
+    statusEl.style.color = '#D0021B';
+    statusEl.textContent = 'Invalid JSON — ' + e.message;
+    return;
+  }
+
+  const files = document.getElementById('collectionOralImages').files;
+  let oral_images;
+  try {
+    oral_images = await Promise.all(Array.from(files).map(async f => ({
+      filename: f.name,
+      content_type: f.type,
+      data_base64: await fileToBase64(f)
+    })));
+  } catch(e) {
+    statusEl.style.color = '#D0021B';
+    statusEl.textContent = 'Failed to read image file(s) — ' + e.message;
+    return;
+  }
+
+  if (!adminSecretCache) {
+    pendingCollectionUpload = { parsed, oral_images };
+    document.getElementById('adminSecretModal').style.display = 'flex';
+    setTimeout(() => document.getElementById('adminSecretInput').focus(), 100);
+    return;
+  }
+  await doUploadCollection(parsed, oral_images);
+}
+async function doUploadCollection(parsed, oral_images){
+  const statusEl = document.getElementById('collectionUploadStatus');
+  const btn = document.getElementById('submitCollectionBtn');
+  btn.disabled = true;
+  btn.textContent = 'Uploading...';
+  try {
+    const resp = await fetch('/admin/upload-collection', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Secret': adminSecretCache },
+      body: JSON.stringify({ ...parsed, oral_images })
+    });
+    const result = await resp.json();
+    if (!resp.ok) {
+      if (resp.status === 401) adminSecretCache = null;
+      statusEl.style.color = '#D0021B';
+      statusEl.textContent = result.error || 'Upload failed';
+      return;
+    }
+    statusEl.style.color = '#0B8043';
+    statusEl.textContent = 'Uploaded as Collection ' + result.collection_number + ' (' + result.oral_image_count + ' image(s)).';
+    toast('Uploaded as Collection ' + result.collection_number);
+    document.getElementById('collectionTemplateInput').value = '';
+    document.getElementById('collectionOralImages').value = '';
+    await loadCollections();
+  } catch(e) {
+    statusEl.style.color = '#D0021B';
+    statusEl.textContent = 'Network error — ' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Upload Collection';
+  }
+}
+
+// ============================================================
 // HOOK INTO QUIZ COMPLETION TO RECORD SESSIONS
 // ============================================================
 const _origShowDone = showDone;
@@ -1682,6 +1886,10 @@ document.addEventListener('DOMContentLoaded', async function() {
   document.getElementById('homeScreen').style.display = 'none';
   updateLoginScreenPromoCopy();
   document.getElementById('loginScreen').style.display = 'flex';
+
+  // Kick off in parallel with everything else — awaited later, right before the home
+  // screen is actually shown, so pills/stats are always correct before a quiz can start.
+  collectionsLoadedPromise = loadCollections();
 
   fetchPricing().then(pricing => {
     if (pricing) document.getElementById('loginPriceText').textContent = formatPrice(pricing);
@@ -1749,7 +1957,9 @@ let isRecording = false;
 function startOralPractice() {
   // Build shuffled list based on year filter
   const yrs = selectedYears.includes('all') ? null : selectedYears;
-  oralQuestions = ORAL_PICTURES.filter(p => !yrs || yrs.includes(p.year));
+  // Legacy pictures have no collection tag at all, so they stay in the pool regardless of
+  // filter (always-available fallback); newly-uploaded pictures are correctly scoped.
+  oralQuestions = MERGED_ORAL_PICTURES.filter(p => !yrs || !p.year || yrs.includes(p.year));
   if (!oralQuestions.length) { toast('No oral pictures for selected collections. Try All collections.'); return; }
   oralQuestions = shuf([...oralQuestions]);
   oralCurrent = 0;

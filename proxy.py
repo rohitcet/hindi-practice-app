@@ -6,6 +6,7 @@ Billing subscription verification route (Android) for the $11/month
 paywall. Stripe, Google and Supabase secret keys never reach the browser.
 """
 
+import base64
 import os
 import json
 import posixpath
@@ -31,6 +32,8 @@ ZOHO_OAUTH_CLIENT_ID = os.environ.get("ZOHO_OAUTH_CLIENT_ID")
 ZOHO_OAUTH_CLIENT_SECRET = os.environ.get("ZOHO_OAUTH_CLIENT_SECRET")
 ZOHO_OAUTH_REFRESH_TOKEN = os.environ.get("ZOHO_OAUTH_REFRESH_TOKEN")
 CAMPAIGN_SEND_SECRET = os.environ.get("CAMPAIGN_SEND_SECRET")
+ADMIN_SECRET = os.environ.get("ADMIN_SECRET")
+LEGACY_COLLECTION_COUNT = 13
 
 if STRIPE_SECRET_KEY:
     stripe.api_key = STRIPE_SECRET_KEY
@@ -126,6 +129,97 @@ def find_user_id_by_customer(stripe_customer_id):
     )
     rows = resp.json() if resp.status_code == 200 else []
     return rows[0]["id"] if rows else None
+
+
+REQUIRED_COLLECTION_SECTIONS = {"Language Use", "Cloze Comprehension", "Comprehension", "Vocabulary"}
+
+
+def _validate_collection_template(body):
+    """Returns an error message string if the uploaded template is invalid, else None."""
+    sections = body.get("sections")
+    if not isinstance(sections, dict):
+        return "Missing or invalid 'sections' object"
+    if set(sections.keys()) != REQUIRED_COLLECTION_SECTIONS:
+        missing = REQUIRED_COLLECTION_SECTIONS - set(sections.keys())
+        extra = set(sections.keys()) - REQUIRED_COLLECTION_SECTIONS
+        parts = []
+        if missing:
+            parts.append(f"missing section(s): {', '.join(sorted(missing))}")
+        if extra:
+            parts.append(f"unexpected section(s): {', '.join(sorted(extra))}")
+        return "Sections must be exactly the 4 required names — " + "; ".join(parts)
+
+    for name, data in sections.items():
+        if not isinstance(data, dict):
+            return f"Section '{name}' must be an object with 'passage' and 'questions'"
+        passage = data.get("passage")
+        if not isinstance(passage, str) or not passage.strip():
+            return f"Section '{name}' is missing a non-empty 'passage'"
+        questions = data.get("questions")
+        if not isinstance(questions, list) or not (3 <= len(questions) <= 25):
+            return f"Section '{name}' must have between 3 and 25 questions"
+        for i, q in enumerate(questions):
+            if not isinstance(q, dict):
+                return f"Section '{name}', question {i + 1}: must be an object"
+            qtext = q.get("q")
+            if not isinstance(qtext, str) or not qtext.strip():
+                return f"Section '{name}', question {i + 1}: missing non-empty 'q' text"
+            opts = q.get("opts")
+            if not isinstance(opts, list) or len(opts) != 4 or not all(isinstance(o, str) and o.strip() for o in opts):
+                return f"Section '{name}', question {i + 1}: 'opts' must be exactly 4 non-empty strings"
+            ans = q.get("ans")
+            if not isinstance(ans, int) or isinstance(ans, bool) or not (0 <= ans <= 3):
+                return f"Section '{name}', question {i + 1}: 'ans' must be an integer 0-3"
+    return None
+
+
+MAX_ORAL_IMAGES = 10
+MAX_ORAL_IMAGE_BYTES = 5 * 1024 * 1024
+ALLOWED_IMAGE_TYPES = {"image/jpeg": "jpg", "image/png": "png"}
+
+
+def _validate_oral_images(oral_images):
+    if not isinstance(oral_images, list):
+        return "'oral_images' must be a list"
+    if len(oral_images) > MAX_ORAL_IMAGES:
+        return f"Too many oral images (max {MAX_ORAL_IMAGES})"
+    for i, img in enumerate(oral_images):
+        if not isinstance(img, dict):
+            return f"Oral image {i + 1}: must be an object"
+        content_type = img.get("content_type")
+        if content_type not in ALLOWED_IMAGE_TYPES:
+            return f"Oral image {i + 1}: content_type must be image/jpeg or image/png"
+        data_base64 = img.get("data_base64")
+        if not isinstance(data_base64, str) or not data_base64:
+            return f"Oral image {i + 1}: missing 'data_base64'"
+        try:
+            decoded = base64.b64decode(data_base64, validate=True)
+        except Exception:
+            return f"Oral image {i + 1}: invalid base64 data"
+        if len(decoded) > MAX_ORAL_IMAGE_BYTES:
+            return f"Oral image {i + 1}: exceeds {MAX_ORAL_IMAGE_BYTES // (1024 * 1024)}MB limit"
+    return None
+
+
+def _upload_oral_image(collection_key, index, img):
+    """Uploads one base64-encoded image to Supabase Storage, returns its public URL."""
+    content_type = img["content_type"]
+    ext = ALLOWED_IMAGE_TYPES[content_type]
+    decoded = base64.b64decode(img["data_base64"], validate=True)
+    filename = f"{collection_key}_{index + 1}.{ext}"
+    resp = requests.post(
+        f"{SUPABASE_URL}/storage/v1/object/oral-pictures/{filename}",
+        headers={
+            "apikey": SUPABASE_SECRET_KEY,
+            "Authorization": f"Bearer {SUPABASE_SECRET_KEY}",
+            "Content-Type": content_type,
+            "x-upsert": "true",
+        },
+        data=decoded,
+        timeout=30,
+    )
+    resp.raise_for_status()
+    return f"{SUPABASE_URL}/storage/v1/object/public/oral-pictures/{filename}"
 
 
 WELCOME_EMAIL_HTML = """\
@@ -314,6 +408,8 @@ class ProxyHandler(BaseHTTPRequestHandler):
             self._handle_new_user_webhook()
         elif self.path == "/send-campaign":
             self._handle_send_campaign()
+        elif self.path == "/admin/upload-collection":
+            self._handle_admin_upload_collection()
         else:
             self.send_response(404)
             self._cors()
@@ -552,6 +648,75 @@ class ProxyHandler(BaseHTTPRequestHandler):
                 results.append({"email": email, "status": "error", "error": str(e)})
         sent_count = sum(1 for r in results if r["status"] == "sent")
         self._json_response(200, {"total": len(results), "sent": sent_count, "results": results})
+
+    def _handle_admin_upload_collection(self):
+        """Admin-only: upload a new practice collection (4 written sections + optional oral
+        picture prompts) into Supabase, where the app fetches and merges it at runtime — no code
+        deploy needed. Protected by a dedicated secret; the client-side admin password used for
+        the dashboard itself must never be trusted to guard a real database-writing endpoint."""
+        secret = self.headers.get("X-Admin-Secret", "")
+        if not ADMIN_SECRET or secret != ADMIN_SECRET:
+            self._json_response(401, {"error": "Invalid admin secret"})
+            return
+
+        length = int(self.headers.get("Content-Length", 0))
+        try:
+            body = json.loads(self.rfile.read(length) or b"{}")
+        except json.JSONDecodeError:
+            self._json_response(400, {"error": "Invalid JSON"})
+            return
+
+        error = _validate_collection_template(body)
+        if error:
+            self._json_response(400, {"error": error})
+            return
+
+        oral_images = body.get("oral_images") or []
+        error = _validate_oral_images(oral_images)
+        if error:
+            self._json_response(400, {"error": error})
+            return
+
+        try:
+            resp = requests.get(
+                f"{SUPABASE_URL}/rest/v1/collections",
+                params={"select": "collection_number", "order": "collection_number.desc", "limit": 1},
+                headers=_supabase_headers(),
+                timeout=15,
+            )
+            resp.raise_for_status()
+            rows = resp.json()
+            existing_max = rows[0]["collection_number"] if rows else 0
+            next_number = max(LEGACY_COLLECTION_COUNT, existing_max) + 1
+            collection_key = f"c{next_number}"
+
+            oral_pictures = []
+            for i, img in enumerate(oral_images):
+                url = _upload_oral_image(collection_key, i, img)
+                oral_pictures.append({"img": url})
+
+            insert_resp = requests.post(
+                f"{SUPABASE_URL}/rest/v1/collections",
+                headers={**_supabase_headers(), "Prefer": "return=minimal"},
+                json={
+                    "collection_key": collection_key,
+                    "collection_number": next_number,
+                    "title": body.get("title") or f"Collection {next_number}",
+                    "sections": body["sections"],
+                    "oral_pictures": oral_pictures,
+                },
+                timeout=15,
+            )
+            insert_resp.raise_for_status()
+            self._json_response(200, {
+                "success": True,
+                "collection_key": collection_key,
+                "collection_number": next_number,
+                "oral_image_count": len(oral_pictures),
+            })
+        except Exception as e:
+            traceback.print_exc()
+            self._json_response(500, {"error": str(e)})
 
     def _json_response(self, status, obj):
         body = json.dumps(obj).encode("utf-8")
