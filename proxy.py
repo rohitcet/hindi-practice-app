@@ -134,11 +134,15 @@ def find_user_id_by_customer(stripe_customer_id):
 REQUIRED_COLLECTION_SECTIONS = {"Language Use", "Cloze Comprehension", "Comprehension", "Vocabulary"}
 
 
-def _validate_questions_list(questions, context_label):
+def _validate_questions_list(questions, context_label, min_opts=4, max_opts=4):
     """Shared q/opts/ans validation, used by both the 4 written sections and listening.questions.
-    Returns an error message string if invalid, else None."""
+    Written sections keep the default exactly-4-options rule; listening passes a wider range since
+    real PSLE listening MCQs have 3 options, not 4. Returns an error message string if invalid,
+    else None."""
     if not isinstance(questions, list) or not (3 <= len(questions) <= 25):
         return f"{context_label} must have between 3 and 25 questions"
+    opts_desc = (f"exactly {min_opts}" if min_opts == max_opts
+                 else f"between {min_opts} and {max_opts}")
     for i, q in enumerate(questions):
         if not isinstance(q, dict):
             return f"{context_label}, question {i + 1}: must be an object"
@@ -146,11 +150,12 @@ def _validate_questions_list(questions, context_label):
         if not isinstance(qtext, str) or not qtext.strip():
             return f"{context_label}, question {i + 1}: missing non-empty 'q' text"
         opts = q.get("opts")
-        if not isinstance(opts, list) or len(opts) != 4 or not all(isinstance(o, str) and o.strip() for o in opts):
-            return f"{context_label}, question {i + 1}: 'opts' must be exactly 4 non-empty strings"
+        if (not isinstance(opts, list) or not (min_opts <= len(opts) <= max_opts)
+                or not all(isinstance(o, str) and o.strip() for o in opts)):
+            return f"{context_label}, question {i + 1}: 'opts' must be {opts_desc} non-empty strings"
         ans = q.get("ans")
-        if not isinstance(ans, int) or isinstance(ans, bool) or not (0 <= ans <= 3):
-            return f"{context_label}, question {i + 1}: 'ans' must be an integer 0-3"
+        if not isinstance(ans, int) or isinstance(ans, bool) or not (0 <= ans < len(opts)):
+            return f"{context_label}, question {i + 1}: 'ans' must be a valid option index"
     return None
 
 
@@ -283,7 +288,7 @@ def _validate_listening(body):
         return None
     if not isinstance(listening, dict):
         return "'listening' must be an object"
-    error = _validate_questions_list(listening.get("questions"), "'listening'")
+    error = _validate_questions_list(listening.get("questions"), "'listening'", min_opts=3, max_opts=4)
     if error:
         return error
     audio = body.get("listening_audio")
