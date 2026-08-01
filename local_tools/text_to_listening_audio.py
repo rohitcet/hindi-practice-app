@@ -57,6 +57,9 @@ AudioSegment.converter = imageio_ffmpeg.get_ffmpeg_exe()
 # (list available voices with: client.list_voices(language_code="hi-IN")).
 VOICE_NAMES = {"male": "hi-IN-Neural2-B", "female": "hi-IN-Neural2-A"}
 
+# 1.0 = normal speed; 0.95 = 5% slower. Google accepts 0.25-4.0.
+SPEAKING_RATE = 0.95
+
 SEGMENT_SYSTEM_PROMPT = """You are preparing a Hindi listening-passage script for text-to-speech \
 narration with automatic male/female voice switching per speaker.
 
@@ -137,7 +140,8 @@ def synthesize_segment(tts_client, text, voice):
     input_text = texttospeech.SynthesisInput(text=text)
     voice_params = texttospeech.VoiceSelectionParams(
         language_code="hi-IN", name=VOICE_NAMES[voice])
-    audio_config = texttospeech.AudioConfig(audio_encoding=texttospeech.AudioEncoding.LINEAR16)
+    audio_config = texttospeech.AudioConfig(
+        audio_encoding=texttospeech.AudioEncoding.LINEAR16, speaking_rate=SPEAKING_RATE)
     response = tts_client.synthesize_speech(
         input=input_text, voice=voice_params, audio_config=audio_config)
     return response.audio_content
