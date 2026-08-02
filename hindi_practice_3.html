@@ -67,8 +67,8 @@ header{background:var(--navy);color:white;position:sticky;top:0;z-index:100;box-
 .flag-stripe{display:flex;flex-direction:column;gap:2px;width:22px;flex-shrink:0;}
 .flag-stripe span{display:block;height:4px;border-radius:1px;}
 .s1{background:#FF9933;}.s2{background:white;}.s3{background:#138808;}
-.header-title{flex:1;}
-.header-title h1{font-size:16px;font-weight:600;color:white;}
+.header-title{flex:1;min-width:0;}
+.header-title h1{font-size:16px;font-weight:600;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .header-title p{font-size:11px;color:rgba(255,255,255,0.5);margin-top:1px;}
 .btn-home{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);color:white;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.12s;flex-shrink:0;}
 .btn-home:hover{background:rgba(255,255,255,0.22);}
@@ -182,6 +182,24 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
 .btn-logout:hover{background:rgba(255,255,255,0.2);}
 .btn-upgrade{padding:5px 12px;border-radius:6px;background:var(--saffron);border:1px solid var(--saffron);color:white;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.12s;}
 .btn-upgrade:hover{background:#e05a00;}
+@media(max-width:480px){
+  /* Narrow (phone/native-app) header: icon + Home + score pill + two avatars + Leaderboard
+     + Sign out doesn't fit in one row even with the title fully collapsed (measured
+     ~450px of unavoidable content vs ~375px viewport). Trim every group down to its
+     essentials rather than just one — text labels go, icons/numbers/avatars stay, since
+     those alone still convey Right/Wrong/Done, Home, and who's signed in. */
+  .header-title p{display:none}
+  .user-name{display:none}
+  #leaderboardBtnLabel,#homeBtnLabel{display:none}
+  .user-bar{gap:6px}
+  .header-inner{gap:6px;padding:10px 12px}
+  .header-icon{width:28px;height:28px}
+  .btn-home{padding:7px 9px}
+  .score-pill{gap:5px}
+  .score-item .lbl{display:none}
+  .btn-secondary{padding:7px 9px}
+  .btn-logout{padding:4px 7px;font-size:10px}
+}
 .trial-banner{display:none;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--saffron-light);border:1px solid #FFD166;border-radius:12px;padding:14px 18px;margin-bottom:20px;}
 .national-day-banner{display:flex;align-items:center;gap:14px;background:#EF3340;border:1px solid #C8102E;border-radius:12px;padding:14px 18px;margin-bottom:20px;}
 .national-day-banner .flag-icon{flex-shrink:0;}
@@ -314,7 +332,7 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
       <h1>&#2361;&#2367;&#2306;&#2342;&#2368; &#2309;&#2349;&#2381;&#2351;&#2366;&#2360; &nbsp;&#183;&nbsp; Hindi Practice</h1>
       <p>PSLE Mock Test</p>
     </div>
-    <button class="btn-home" onclick="goHome()" id="homeBtn" style="display:none">&#8962; Home</button>
+    <button class="btn-home" onclick="goHome()" id="homeBtn" style="display:none">&#8962; <span id="homeBtnLabel">Home</span></button>
     <div class="practice-timer" id="practiceSetTimer" style="display:none"><span id="practiceSetTimerText"></span></div>
     <div class="score-pill" id="headerScore" style="display:none">
       <div class="score-item s-correct"><div class="num" id="hCorrect">0</div><div class="lbl">Right</div></div>
@@ -330,7 +348,7 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
       <span id="userAvatarEmoji" class="user-avatar-emoji" style="display:none"></span>
       <span id="userHppName" class="user-name" style="display:none"></span>
       <button class="btn-upgrade" id="upgradePill" style="display:none" onclick="openPricingModal()">&#9889; Upgrade</button>
-      <button class="btn-secondary" onclick="showLeaderboard()">&#127942; Leaderboard</button>
+      <button class="btn-secondary" onclick="showLeaderboard()">&#127942; <span id="leaderboardBtnLabel">Leaderboard</span></button>
       <button class="btn-logout" onclick="signOut()">Sign out</button>
     </div>
   </div>
