@@ -2180,6 +2180,8 @@ let recordingTimer = null;
 let recordSeconds = 0;
 let audioBlob = null;
 let isRecording = false;
+let lastRecordingBase64 = null;
+let lastRecordingMime = null;
 
 function startOralPractice() {
   // Build shuffled list based on year filter
@@ -2267,10 +2269,41 @@ function onRecordingSaved(blob) {
   player.src = url;
   player.style.display = 'block';
   const downloadBtn = document.getElementById('downloadBtn');
-  downloadBtn.href = url;
+  if (isNative()) {
+    // Android WebView doesn't reliably honor <a download> on a blob: URL — clicking
+    // silently does nothing on many devices. Use the native Share sheet instead, which
+    // lets the user save the file or hand it straight to Gmail/Drive/WhatsApp.
+    downloadBtn.removeAttribute('href');
+    downloadBtn.onclick = (e) => { e.preventDefault(); shareRecordingNative(); };
+    downloadBtn.textContent = '\u{1F4E4} Share / Save Recording';
+    document.getElementById('recStatus').textContent = 'Recording saved! Share it to save a copy or send it in for feedback.';
+  } else {
+    downloadBtn.href = url;
+    document.getElementById('recStatus').textContent = 'Recording saved! Download it, then send it in for personalized feedback.';
+  }
   downloadBtn.style.display = 'block';
   document.getElementById('emailBtn').style.display = 'block';
-  document.getElementById('recStatus').textContent = 'Recording saved! Download it, then send it in for personalized feedback.';
+}
+
+async function shareRecordingNative() {
+  if (!lastRecordingBase64) return;
+  try {
+    const { Filesystem, Directory } = window.Capacitor.Plugins;
+    // capacitor-voice-recorder reports audio/aac on Android (the only native platform
+    // this app targets); .mp3/.ogg only apply on iOS/web where this path isn't used.
+    const MIME_EXT = { 'audio/aac': 'aac', 'audio/mp4': 'mp3', 'audio/webm': 'ogg', 'audio/webm;codecs=opus': 'ogg', 'audio/ogg;codecs=opus': 'ogg' };
+    const ext = MIME_EXT[lastRecordingMime] || 'aac';
+    const fileName = 'hindi_oral_practice_' + Date.now() + '.' + ext;
+    const written = await Filesystem.writeFile({ path: fileName, data: lastRecordingBase64, directory: Directory.Cache });
+    await window.Capacitor.Plugins.Share.share({
+      title: 'Hindi oral practice recording',
+      text: 'My Hindi oral practice recording — Picture ' + (oralCurrent + 1),
+      url: written.uri,
+      dialogTitle: 'Share or save your recording'
+    });
+  } catch (e) {
+    document.getElementById('recStatus').textContent = 'Could not share recording: ' + (e.message || e);
+  }
 }
 
 async function startRecording() {
@@ -2322,7 +2355,9 @@ async function stopRecording() {
   if (isNative()) {
     try {
       const result = await window.Capacitor.Plugins.VoiceRecorder.stopRecording();
-      onRecordingSaved(base64ToBlob(result.value.recordDataBase64, result.value.mimeType));
+      lastRecordingBase64 = result.value.recordDataBase64;
+      lastRecordingMime = result.value.mimeType;
+      onRecordingSaved(base64ToBlob(lastRecordingBase64, lastRecordingMime));
     } catch(e) {
       document.getElementById('recStatus').textContent = 'Could not save recording: ' + (e.message || e);
     }
@@ -2532,27 +2567,20 @@ async function ensureLeaderboardIdentity(){
 }
 
 async function recordLeaderboardPoints(correctCount){
-  if (!currentUser || !currentUser.id || !correctCount || correctCount <= 0) return;
+  // Note: correctCount===0 is a valid, real practice session (all wrong/skipped) and must
+  // still count toward the streak — only bail on a missing/invalid count, not a zero one.
+  if (!currentUser || !currentUser.id || correctCount == null || correctCount < 0) return;
   const row = await ensureLeaderboardIdentity();
   if (!row) return;
-  const today = new Date().toISOString().slice(0,10);
-  let { current_streak, longest_streak, last_practice_date, total_points } = row;
-  let streakBonus = 0;
-  if (last_practice_date !== today) {
-    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0,10);
-    current_streak = (last_practice_date === yesterday) ? current_streak + 1 : 1;
-    longest_streak = Math.max(longest_streak, current_streak);
-    streakBonus = Math.min(current_streak, LEADERBOARD_STREAK_BONUS_CAP) * 2;
-    last_practice_date = today;
-  }
   const oldRank = getRankForPoints(row.total_points).current;
-  total_points += correctCount + streakBonus;
-  const { data, error } = await sb.from('leaderboard').update({
-    total_points, current_streak, longest_streak, last_practice_date, updated_at: new Date().toISOString()
-  }).eq('user_id', currentUser.id).select().single();
+  // The points/streak update runs as a single atomic Postgres function (row-locked on the
+  // user's own leaderboard row) rather than a client-side read-modify-write — otherwise two
+  // sessions completing around the same time (e.g. phone app + browser tab) can each read a
+  // stale total_points and one write silently clobbers the other's points.
+  const { data, error } = await sb.rpc('record_leaderboard_points', { p_correct_count: correctCount }).single();
   if (error) { console.warn('leaderboard update failed', error); return; }
   myLeaderboardRow = data;
-  const newRank = getRankForPoints(total_points).current;
+  const newRank = getRankForPoints(data.total_points).current;
   if (newRank.title !== oldRank.title) {
     toast('🎉 Rank up! You\'re now ' + newRank.emoji + ' ' + newRank.title);
   }
