@@ -534,7 +534,7 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
         <div class="done-stat-card sk"><div class="n" id="doneSK">0</div><div class="l">&#8212; Skipped</div></div>
       </div>
       <div class="done-btns">
-        <button class="btn-primary" onclick="restartQuiz()">Try again</button>
+        <button class="btn-primary" onclick="restartQuiz()">Next round &#8594;</button>
         <button class="btn-secondary" onclick="goHome()">&#8962; Home</button>
       </div>
     </div>
@@ -1054,6 +1054,8 @@ function updateHeroStats(){
 let selectedMode='all',selectedYears=['all'],questions=[],current=0;
 let answered=false,correct=0,wrong=0,answers={};
 let activitySessionStartedAt=null;
+const ROUND_SIZE=10;
+let listeningGroupStartedAt=null,currentListeningGroupBoundStart=-1,scoredListeningGroups=new Set();
 
 // ============================================================
 // ACTIVITY LOG (per-section time/accuracy tracking for the stats views —
@@ -1158,15 +1160,20 @@ function updateQuestionTimerDisplay(){
 let practiceSetActive = false, practiceSetOralPic = null;
 let practiceSetInterval = null, practiceSetOverallSeconds = 0;
 function clearPracticeSetTimer(){ clearInterval(practiceSetInterval); practiceSetInterval = null; }
+let overallTimerLabel='Practice Set', overallTimerOnExpire=null;
 function updatePracticeSetTimerDisplay(){
   const el = document.getElementById('practiceSetTimerText');
   if (!el) return;
   const m = Math.floor(Math.max(0,practiceSetOverallSeconds)/60), s = Math.max(0,practiceSetOverallSeconds)%60;
-  el.textContent = 'Practice Set: ' + m + ':' + String(s).padStart(2,'0') + ' left';
+  el.textContent = overallTimerLabel + ': ' + m + ':' + String(s).padStart(2,'0') + ' left';
 }
-function startPracticeSetTimer(totalSeconds){
+// label/onExpire let this same overall-countdown widget be reused for a regular round's
+// timer (see startQuiz), not just Practice Set - defaults preserve the original behavior.
+function startPracticeSetTimer(totalSeconds, label, onExpire){
   clearPracticeSetTimer();
   practiceSetOverallSeconds = totalSeconds;
+  overallTimerLabel = label || 'Practice Set';
+  overallTimerOnExpire = onExpire || (() => finishPracticeSet(true));
   document.getElementById('practiceSetTimer').style.display = 'flex';
   updatePracticeSetTimerDisplay();
   practiceSetInterval = setInterval(() => {
@@ -1174,7 +1181,7 @@ function startPracticeSetTimer(totalSeconds){
     updatePracticeSetTimerDisplay();
     if (practiceSetOverallSeconds <= 0) {
       clearPracticeSetTimer();
-      finishPracticeSet(true);
+      overallTimerOnExpire();
     }
   }, 1000);
 }
@@ -1276,19 +1283,31 @@ function buildQ(){
       if(inc)data.questions.forEach(q=>res.push({year:yr,section:sec,passage:data.passage,...q}));
     });
   });
-  return shuf(res);
+  // Cap to one round rather than dumping the whole matching pool (which can run 100+
+  // questions for "All sections" or a big single mode) - a no-op via slice() when the
+  // pool is already smaller than a round. "Next round" on the Done screen just calls
+  // this again for a fresh shuffled batch.
+  return shuf(res).slice(0, ROUND_SIZE);
 }
 function shuf(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
 function startQuiz(){
   questions=buildQ();if(!questions.length){toast('No questions found. Try different filters!');return;}
   current=0;correct=0;wrong=0;answered=false;answers={};
   activitySessionStartedAt=Date.now();
+  currentListeningGroupBoundStart=-1;scoredListeningGroups=new Set();
   updH();
   document.getElementById('homeScreen').style.display='none';
   document.getElementById('doneScreen').style.display='none';
   document.getElementById('quizScreen').style.display='block';
   document.getElementById('headerScore').style.display='flex';
   document.getElementById('homeBtn').style.display='flex';
+  // Round timer - total is the sum of each question's own time budget (same calculation
+  // Practice Set already uses), giving a "beat the clock" countdown for the round as a
+  // whole rather than just per-question. Listening is self-paced per audio track instead.
+  if (selectedMode !== 'listening') {
+    const totalSeconds = questions.reduce((sum,q)=>sum+getSectionTimeLimit(q.section),0);
+    startPracticeSetTimer(totalSeconds, 'Round', () => showDone());
+  }
   renderQ();
 }
 function updH(){
@@ -1373,6 +1392,7 @@ function listeningGroupBounds(idx){
 }
 function renderListeningGroup(){
   const [start,end]=listeningGroupBounds(current);
+  if(start!==currentListeningGroupBoundStart){currentListeningGroupBoundStart=start;listeningGroupStartedAt=Date.now();}
   const q0=questions[start];
   const pct=Math.round((start/questions.length)*100);
   const rangeLabel=start===end?String(start+1):(start+1)+'-'+(end+1);
@@ -1416,7 +1436,21 @@ function selListeningOpt(idx,i){
   renderListeningGroup();
 }
 function nextListeningGroup(){
-  const [,end]=listeningGroupBounds(current);
+  const [start,end]=listeningGroupBounds(current);
+  // Score/log this audio track the moment it's finished, rather than waiting for the whole
+  // Listening session (which can span many tracks) to end - each track is a natural,
+  // small checkpoint. Guard against Back/forward re-triggering a re-credit of the same track.
+  if (!scoredListeningGroups.has(start)) {
+    scoredListeningGroups.add(start);
+    let groupCorrect=0, groupWrong=0, groupTotal=0;
+    for (let idx=start; idx<=end; idx++) {
+      groupTotal++;
+      const a=answers[idx];
+      if (a && a.isCorrect) groupCorrect++; else groupWrong++;
+    }
+    recordLeaderboardPoints(groupCorrect);
+    logSimpleActivity('listening', listeningGroupStartedAt, { total: groupTotal, correct: groupCorrect, wrong: groupWrong, skipped: 0 });
+  }
   current=end+1;updH();renderQ();
 }
 function prevListeningGroup(){
@@ -1428,6 +1462,8 @@ function prevListeningGroup(){
 
 function showDone(){
   clearQuestionTimer();
+  clearPracticeSetTimer();
+  document.getElementById('practiceSetTimer').style.display='none';
   document.getElementById('quizScreen').style.display='none';
   document.getElementById('doneScreen').style.display='block';
   const tot=questions.length;const sk=Object.values(answers).filter(a=>a.skipped).length;
@@ -1443,8 +1479,12 @@ function showDone(){
   document.getElementById('doneW').textContent=wrong;
   document.getElementById('doneSK').textContent=sk;
   buildMistakesReview();
-  recordLeaderboardPoints(correct);
-  logSessionActivity(activitySessionStartedAt);
+  // Listening is scored per audio track as each group finishes (see nextListeningGroup) -
+  // scoring it again here on the whole session would double-count every group's points.
+  if (selectedMode !== 'listening') {
+    recordLeaderboardPoints(correct);
+    logSessionActivity(activitySessionStartedAt);
+  }
 }
 function buildMistakesReview(){
   const mistakes=[];
@@ -1480,6 +1520,14 @@ function goHome(){
   }
   if (document.getElementById('oralScreen').style.display === 'block' && !practiceSetActive && oralQuestions.length) {
     logSimpleActivity('oral', activitySessionStartedAt, { total: Math.min(oralCurrent + 1, oralQuestions.length) });
+  }
+  // Leaving a round early (Home) shouldn't discard whatever was already answered - credit
+  // it the same way finishing normally would. Listening is excluded since each audio track
+  // already banks its own points as it's completed (nextListeningGroup); an in-progress,
+  // not-yet-finished track here shouldn't count.
+  if (document.getElementById('quizScreen').style.display === 'block' && selectedMode !== 'listening' && !practiceSetActive && current < questions.length && Object.keys(answers).length) {
+    recordLeaderboardPoints(correct);
+    logSessionActivity(activitySessionStartedAt);
   }
   clearQuestionTimer();
   clearPracticeSetTimer();
