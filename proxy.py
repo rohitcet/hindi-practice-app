@@ -461,6 +461,21 @@ class ProxyHandler(BaseHTTPRequestHandler):
         if url_path == "/pricing":
             self._handle_get_pricing()
             return
+        self._serve_static(url_path, write_body=True)
+
+    def do_HEAD(self):
+        # Search crawlers (Bingbot in particular) probe with HEAD before/instead of GET.
+        # BaseHTTPRequestHandler 501s any method without a handler, which was making
+        # every page "discovered but not crawled" in Bing Webmaster Tools.
+        url_path = urllib.parse.urlparse(self.path).path
+        if url_path == "/pricing":
+            self.send_response(200)
+            self._cors()
+            self.end_headers()
+            return
+        self._serve_static(url_path, write_body=False)
+
+    def _serve_static(self, url_path, write_body):
         if url_path == "/":
             url_path = "/hindi_practice_3.html"
 
@@ -471,7 +486,8 @@ class ProxyHandler(BaseHTTPRequestHandler):
             self.send_response(404)
             self._cors()
             self.end_headers()
-            self.wfile.write(b"Not found")
+            if write_body:
+                self.wfile.write(b"Not found")
             return
 
         ext = os.path.splitext(file_path)[1].lower()
@@ -491,7 +507,8 @@ class ProxyHandler(BaseHTTPRequestHandler):
             self.send_header("Cache-Control", "public, max-age=3600")
         self._cors()
         self.end_headers()
-        self.wfile.write(data)
+        if write_body:
+            self.wfile.write(data)
 
     def do_POST(self):
         if self.path == "/create-checkout-session":
