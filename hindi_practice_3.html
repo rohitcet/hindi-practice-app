@@ -1484,6 +1484,12 @@ async function signInWithGoogle() {
 
 sb.auth.onAuthStateChange((event, session) => {
   if (event === 'SIGNED_IN' && session) {
+    // Supabase re-fires SIGNED_IN (not just TOKEN_REFRESHED) on tab focus/visibility
+    // changes and multi-tab storage sync, even for an already-active session. Without
+    // this guard, that redundant event re-runs onSignedIn -> checkAccessAndShowScreen ->
+    // showScreenAfterLogin(), which forces the Home screen and kicks the user out of
+    // whatever mode (Listening, Composition, Oral, etc.) they were mid-session in.
+    if (currentUser && currentUser.id === session.user.id) return;
     onSignedIn(session);
   } else if (event === 'SIGNED_OUT') {
     resetToLoginScreen();
