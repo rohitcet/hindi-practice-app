@@ -1053,6 +1053,69 @@ function updateHeroStats(){
 
 let selectedMode='all',selectedYears=['all'],questions=[],current=0;
 let answered=false,correct=0,wrong=0,answers={};
+let activitySessionStartedAt=null;
+
+// ============================================================
+// ACTIVITY LOG (per-section time/accuracy tracking for the stats views —
+// separate from the leaderboard's cumulative points/streak, purely observational)
+// ============================================================
+function normalizeSectionKey(section){
+  const s = (section||'').toLowerCase().replace(/[^a-z]/g,'');
+  if (s.includes('cloze')) return 'cloze';
+  if (s.includes('language')) return 'language';
+  if (s.includes('vocabulary')) return 'vocabulary';
+  if (s.includes('listening')) return 'listening';
+  if (s.includes('comprehension')) return 'comprehension';
+  return 'other';
+}
+async function logActivityRows(rows){
+  if (!currentUser || !currentUser.id || !rows.length) return;
+  const { error } = await sb.from('activity_log').insert(rows);
+  if (error) console.warn('activity log failed', error);
+}
+// Used by showDone() — splits a (possibly mixed-section) MCQ session into one row per
+// section actually present, dividing the session's wall-clock duration proportionally by
+// each section's share of questions so per-section durations still sum to the real total.
+function logSessionActivity(startedAt){
+  if (!currentUser || !currentUser.id || !startedAt) return;
+  const durationTotal = Math.max(0, Math.round((Date.now() - startedAt) / 1000));
+  const bySection = {};
+  questions.forEach((q, i) => {
+    const key = normalizeSectionKey(q.section);
+    if (!bySection[key]) bySection[key] = { total: 0, correct: 0, wrong: 0, skipped: 0 };
+    bySection[key].total++;
+    const a = answers[i];
+    if (a) {
+      if (a.skipped) bySection[key].skipped++;
+      else if (a.isCorrect) bySection[key].correct++;
+      else bySection[key].wrong++;
+    }
+  });
+  const totalQ = questions.length || 1;
+  const nowIso = new Date().toISOString();
+  const startedIso = new Date(startedAt).toISOString();
+  const rows = Object.entries(bySection).map(([section, s]) => ({
+    user_id: currentUser.id, section,
+    questions_total: s.total, questions_correct: s.correct, questions_wrong: s.wrong, questions_skipped: s.skipped,
+    duration_seconds: Math.round(durationTotal * (s.total / totalQ)),
+    started_at: startedIso, ended_at: nowIso
+  }));
+  logActivityRows(rows);
+}
+// Used by finishPracticeSet()/showOralDone()/goHome() (composition) — logs the whole
+// session as a single row under its own section key, since Practice Set/Oral/Composition
+// don't decompose into the written sections the way a mixed MCQ set does.
+function logSimpleActivity(section, startedAt, counts){
+  if (!currentUser || !currentUser.id || !startedAt) return;
+  const durationTotal = Math.max(0, Math.round((Date.now() - startedAt) / 1000));
+  logActivityRows([{
+    user_id: currentUser.id, section,
+    questions_total: counts.total || 0, questions_correct: counts.correct || 0,
+    questions_wrong: counts.wrong || 0, questions_skipped: counts.skipped || 0,
+    duration_seconds: durationTotal,
+    started_at: new Date(startedAt).toISOString(), ended_at: new Date().toISOString()
+  }]);
+}
 
 // ============================================================
 // PER-QUESTION TIMERS
@@ -1136,6 +1199,7 @@ function startPracticeSet(){
   practiceSetOralPic = shuf(MERGED_ORAL_PICTURES)[0];
   questions = mcq;
   current=0; correct=0; wrong=0; answered=false; answers={};
+  activitySessionStartedAt=Date.now();
   updH();
   document.getElementById('homeScreen').style.display='none';
   document.getElementById('doneScreen').style.display='none';
@@ -1175,6 +1239,7 @@ function finishPracticeSet(timedOut){
   document.getElementById('doneSK').textContent = sk;
   buildMistakesReview();
   recordLeaderboardPoints(correct);
+  logSimpleActivity('practice_set', activitySessionStartedAt, { total: tot, correct, wrong, skipped: sk });
 }
 
 function selectMode(el,mode){document.querySelectorAll('.mode-card').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');selectedMode=mode;}
@@ -1217,6 +1282,7 @@ function shuf(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor
 function startQuiz(){
   questions=buildQ();if(!questions.length){toast('No questions found. Try different filters!');return;}
   current=0;correct=0;wrong=0;answered=false;answers={};
+  activitySessionStartedAt=Date.now();
   updH();
   document.getElementById('homeScreen').style.display='none';
   document.getElementById('doneScreen').style.display='none';
@@ -1378,6 +1444,7 @@ function showDone(){
   document.getElementById('doneSK').textContent=sk;
   buildMistakesReview();
   recordLeaderboardPoints(correct);
+  logSessionActivity(activitySessionStartedAt);
 }
 function buildMistakesReview(){
   const mistakes=[];
@@ -1405,6 +1472,15 @@ function toggleMistakesReview(){
 }
 function restartQuiz(){document.getElementById('doneScreen').style.display='none';startQuiz();}
 function goHome(){
+  // Oral/Composition have no MCQ "finish" event, so a session left early via Home would
+  // otherwise never get logged at all — capture whatever was actually viewed before the
+  // screens below get hidden and the in-progress state is lost.
+  if (document.getElementById('compositionScreen').style.display === 'block' && compositionQueue.length) {
+    logSimpleActivity('composition', activitySessionStartedAt, { total: compositionIndex + 1 });
+  }
+  if (document.getElementById('oralScreen').style.display === 'block' && !practiceSetActive && oralQuestions.length) {
+    logSimpleActivity('oral', activitySessionStartedAt, { total: Math.min(oralCurrent + 1, oralQuestions.length) });
+  }
   clearQuestionTimer();
   clearPracticeSetTimer();
   clearCompositionTimer();
@@ -2192,6 +2268,7 @@ function startOralPractice() {
   if (!oralQuestions.length) { toast('No oral pictures for selected collections. Try All collections.'); return; }
   oralQuestions = shuf([...oralQuestions]);
   oralCurrent = 0;
+  activitySessionStartedAt=Date.now();
   document.getElementById('homeScreen').style.display = 'none';
   document.getElementById('oralScreen').style.display = 'block';
   document.getElementById('headerScore').style.display = 'none';
@@ -2397,6 +2474,7 @@ function oralSkip() { oralCurrent++; renderOralQ(); }
 function showOralDone() {
   document.getElementById('oralScreen').style.display = 'none';
   if (practiceSetActive) { finishPracticeSet(false); return; }
+  logSimpleActivity('oral', activitySessionStartedAt, { total: oralQuestions.length });
   document.getElementById('doneScreen').style.display = 'block';
   document.getElementById('doneEmoji').innerHTML = '&#127908;';
   document.getElementById('doneTitle').textContent = 'Oral Practice Complete!';
@@ -2444,6 +2522,7 @@ function startComposition() {
   const yrs = selectedYears.includes('all') ? null : selectedYears;
   compositionQueue = shuf(MERGED_COMPOSITIONS.filter(c => !yrs || yrs.includes(c.year)));
   compositionIndex = 0;
+  activitySessionStartedAt=Date.now();
   document.getElementById('homeScreen').style.display = 'none';
   document.getElementById('compositionScreen').style.display = 'block';
   document.getElementById('headerScore').style.display = 'none';
