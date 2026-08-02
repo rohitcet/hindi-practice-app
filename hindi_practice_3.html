@@ -98,6 +98,9 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
 .mode-card p{font-size:11px;color:var(--muted);line-height:1.5;}
 .mode-card .check{position:absolute;top:10px;right:10px;width:18px;height:18px;border-radius:50%;background:var(--saffron);color:white;font-size:10px;display:none;align-items:center;justify-content:center;}
 .mode-card.selected .check{display:flex;}
+.info-btn{position:absolute;top:10px;right:34px;width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border);background:var(--card);color:var(--muted);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:1;padding:0;line-height:1;}
+.info-btn:hover{border-color:var(--navy);color:var(--navy);}
+.info-btn::before{content:'';position:absolute;top:-9px;left:-9px;right:-9px;bottom:-9px;}
 .year-grid{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:28px;}
 .year-btn{padding:6px 13px;border-radius:999px;border:1.5px solid var(--border);background:var(--card);font-size:12px;font-weight:500;cursor:pointer;transition:all 0.12s;color:var(--text);}
 .year-btn:hover{border-color:var(--navy);}
@@ -444,6 +447,17 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
   </div>
 </div>
 
+<!-- SHARED INFO MODAL (mode cards, collections, general how-to) -->
+<div class="modal-overlay" id="infoModal" style="display:none" onclick="if(event.target===this)closeInfoModal()">
+  <div class="modal-box">
+    <h3 id="infoModalTitle"></h3>
+    <div id="infoModalBody" style="font-size:13.5px;color:var(--text);line-height:1.7;margin-bottom:20px"></div>
+    <div class="modal-btns">
+      <button class="btn-primary" onclick="closeInfoModal()">Got it</button>
+    </div>
+  </div>
+</div>
+
 <main>
   <div id="homeScreen">
     <div class="national-day-banner" id="nationalDayBanner" style="display:none">
@@ -494,20 +508,24 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
         <div class="hero-stat"><div class="n">8</div><div class="l">Sections</div></div>
       </div>
     </div>
-    <p class="section-title">Choose mode</p>
+    <p class="section-title" style="display:flex;align-items:center;justify-content:space-between">Choose mode
+      <button onclick="openHowToModal()" aria-label="How to use this app" style="width:20px;height:20px;border-radius:50%;border:1.5px solid var(--muted);background:none;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;flex-shrink:0;padding:0">i</button>
+    </p>
     <div class="mode-grid">
-      <div class="mode-card selected" onclick="selectMode(this,'all')"><div class="icon">&#128218;</div><h3>All sections</h3><p>Mix of language, comprehension &amp; vocabulary</p><div class="check">&#10003;</div></div>
-      <div class="mode-card" onclick="selectMode(this,'language')"><div class="icon">&#9999;</div><h3>Language use</h3><p>Fill in the blanks (A1 &amp; A2)</p><div class="check">&#10003;</div></div>
-      <div class="mode-card" onclick="selectMode(this,'cloze')"><div class="icon">&#128214;</div><h3>Cloze comprehension</h3><p>Read passages, fill missing words (A3)</p><div class="check">&#10003;</div></div>
-      <div class="mode-card" onclick="selectMode(this,'comprehension')"><div class="icon">&#128269;</div><h3>Comprehension</h3><p>Read stories, answer MCQ (A4)</p><div class="check">&#10003;</div></div>
-      
-      <div class="mode-card" onclick="selectMode(this,'oral')"><div class="icon">🎤</div><h3>Oral practice</h3><p>Describe pictures aloud, up to 5 minutes each — send recordings in for personalized feedback (A4 oral)</p><div class="check">&#10003;</div></div>
-      <div class="mode-card" onclick="selectMode(this,'vocabulary')"><div class="icon">&#11088;</div><h3>Vocabulary</h3><p>Synonyms &amp; word meanings</p><div class="check">&#10003;</div></div>
-      <div class="mode-card" onclick="selectMode(this,'composition')"><div class="icon">&#128221;</div><h3>Composition</h3><p>View a writing prompt &amp; picture, write your response on paper</p><div class="check">&#10003;</div></div>
-      <div class="mode-card" onclick="selectMode(this,'listening')"><div class="icon">&#127911;</div><h3>Listening practice</h3><p>Listen to an audio passage, answer comprehension questions</p><div class="check">&#10003;</div></div>
-      <div class="mode-card" onclick="selectMode(this,'practiceset')"><div class="icon">&#127919;</div><h3>Practice Set</h3><p>Timed mix: 5 language, 2 cloze, 5 vocabulary + 1 oral, from all collections</p><div class="check">&#10003;</div></div>
+      <div class="mode-card selected" onclick="if(!event.target.closest('.info-btn'))selectMode(this,'all')"><button class="info-btn" onclick="event.stopPropagation();openInfoModal('&#128218; All sections','A mixed round pulling from Language, Cloze, Comprehension and Vocabulary together — the most realistic way to practise since the real exam covers all of them. Each round is 10 questions with its own timer; tap &quot;Next round&quot; for a fresh mixed batch.')">i</button><div class="icon">&#128218;</div><h3>All sections</h3><p>Mix of language, comprehension &amp; vocabulary</p><div class="check">&#10003;</div></div>
+      <div class="mode-card" onclick="if(!event.target.closest('.info-btn'))selectMode(this,'language')"><button class="info-btn" onclick="event.stopPropagation();openInfoModal('&#9999;&#65039; Language use','Fill-in-the-blank grammar and vocabulary questions matching PSLE Paper 1 sections A1 &amp; A2 — choosing the right word form, connector, or phrase to complete a sentence correctly.')">i</button><div class="icon">&#9999;</div><h3>Language use</h3><p>Fill in the blanks (A1 &amp; A2)</p><div class="check">&#10003;</div></div>
+      <div class="mode-card" onclick="if(!event.target.closest('.info-btn'))selectMode(this,'cloze')"><button class="info-btn" onclick="event.stopPropagation();openInfoModal('&#128214; Cloze comprehension','A short passage with several words removed (A3) — read the whole passage first for context, then pick the word that fits each blank naturally, not just grammatically.')">i</button><div class="icon">&#128214;</div><h3>Cloze comprehension</h3><p>Read passages, fill missing words (A3)</p><div class="check">&#10003;</div></div>
+      <div class="mode-card" onclick="if(!event.target.closest('.info-btn'))selectMode(this,'comprehension')"><button class="info-btn" onclick="event.stopPropagation();openInfoModal('&#128269; Comprehension','A full story or passage (A4) followed by MCQ questions testing understanding — read carefully, since answers often hinge on a specific detail rather than the general gist.')">i</button><div class="icon">&#128269;</div><h3>Comprehension</h3><p>Read stories, answer MCQ (A4)</p><div class="check">&#10003;</div></div>
+
+      <div class="mode-card" onclick="if(!event.target.closest('.info-btn'))selectMode(this,'oral')"><button class="info-btn" onclick="event.stopPropagation();openInfoModal('&#127908; Oral practice','Describe a picture aloud in Hindi for up to 5 minutes, just like the real oral exam. Not auto-scored — record your answer, then use &quot;Share/Download&quot; to send it in for personalised feedback.')">i</button><div class="icon">🎤</div><h3>Oral practice</h3><p>Describe pictures aloud, up to 5 minutes each — send recordings in for personalized feedback (A4 oral)</p><div class="check">&#10003;</div></div>
+      <div class="mode-card" onclick="if(!event.target.closest('.info-btn'))selectMode(this,'vocabulary')"><button class="info-btn" onclick="event.stopPropagation();openInfoModal('&#11088; Vocabulary','Synonyms and word-meaning questions — a good warm-up mode since each question is quick, and a great way to build the word bank you need for every other section.')">i</button><div class="icon">&#11088;</div><h3>Vocabulary</h3><p>Synonyms &amp; word meanings</p><div class="check">&#10003;</div></div>
+      <div class="mode-card" onclick="if(!event.target.closest('.info-btn'))selectMode(this,'composition')"><button class="info-btn" onclick="event.stopPropagation();openInfoModal('&#128221; Composition','A writing prompt and picture, just like the real exam paper. Not auto-scored — read the prompt, plan, and write your response on paper within the time limit shown.')">i</button><div class="icon">&#128221;</div><h3>Composition</h3><p>View a writing prompt &amp; picture, write your response on paper</p><div class="check">&#10003;</div></div>
+      <div class="mode-card" onclick="if(!event.target.closest('.info-btn'))selectMode(this,'listening')"><button class="info-btn" onclick="event.stopPropagation();openInfoModal('&#127911; Listening practice','Listen to a real audio passage, then answer questions about what you heard, grouped by audio track. Each track is scored as soon as you finish it, so you can stop after any track without losing progress.')">i</button><div class="icon">&#127911;</div><h3>Listening practice</h3><p>Listen to an audio passage, answer comprehension questions</p><div class="check">&#10003;</div></div>
+      <div class="mode-card" onclick="if(!event.target.closest('.info-btn'))selectMode(this,'practiceset')"><button class="info-btn" onclick="event.stopPropagation();openInfoModal('&#127919; Practice Set','A timed mock exam: 5 Language, 2 Cloze, 5 Vocabulary + 1 Oral picture, drawn from all collections at once. Best once you\'re comfortable with each section individually — it\'s the closest thing to sitting the real paper.')">i</button><div class="icon">&#127919;</div><h3>Practice Set</h3><p>Timed mix: 5 language, 2 cloze, 5 vocabulary + 1 oral, from all collections</p><div class="check">&#10003;</div></div>
     </div>
-    <p class="section-title">Select collection</p>
+    <p class="section-title" style="display:flex;align-items:center;justify-content:space-between">Select collection
+      <button onclick="openInfoModal('&#128193; Collections','Each collection is one real past PSLE Hindi paper, organised by year. Pick a specific collection to focus on that year\'s paper, or leave &quot;All&quot; selected to mix questions from every collection together.')" aria-label="About collections" style="width:20px;height:20px;border-radius:50%;border:1.5px solid var(--muted);background:none;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;flex-shrink:0;padding:0">i</button>
+    </p>
     <div class="year-grid" id="yearGrid">
       <button class="year-btn active" onclick="toggleYear(this,'all')">All</button>
     </div>
@@ -1922,6 +1940,27 @@ async function openPricingModal() {
 
 function closePricingModal() {
   document.getElementById('pricingModal').style.display = 'none';
+}
+
+function openInfoModal(title, bodyHtml) {
+  document.getElementById('infoModalTitle').innerHTML = title;
+  document.getElementById('infoModalBody').innerHTML = bodyHtml;
+  document.getElementById('infoModal').style.display = 'flex';
+}
+function closeInfoModal() {
+  document.getElementById('infoModal').style.display = 'none';
+}
+function openHowToModal() {
+  openInfoModal('&#128161; How to use this app', `
+    <ul style="margin:0;padding-left:20px">
+      <li>Not sure where to start? Try <strong>All sections</strong> for a mix, or pick one mode to focus on your weak spot.</li>
+      <li>Each round is <strong>10 questions with its own timer</strong> — finish one, then tap "Next round" for a fresh batch.</li>
+      <li><strong>Practice Set</strong> simulates a real timed PSLE paper — best once you're comfortable with the individual sections.</li>
+      <li><strong>Oral &amp; Composition</strong> aren't auto-scored — describe or write your answer, then share/download it for feedback.</li>
+      <li>Points and streaks build up as you practise — check the &#127942; <strong>Leaderboard</strong> to see your progress.</li>
+      <li>Tap the small <strong>ⓘ</strong> on any mode card for details on that mode specifically.</li>
+    </ul>
+  `);
 }
 
 async function buyLifetimeAccess() {
