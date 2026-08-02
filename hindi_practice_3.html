@@ -1073,6 +1073,7 @@ let selectedMode='all',selectedYears=['all'],questions=[],current=0;
 let answered=false,correct=0,wrong=0,answers={};
 let activitySessionStartedAt=null;
 const ROUND_SIZE=10;
+const LISTENING_ROUND_TRACKS=3;
 let listeningGroupStartedAt=null,currentListeningGroupBoundStart=-1,scoredListeningGroups=new Set();
 
 // ============================================================
@@ -1279,10 +1280,13 @@ function toggleYear(el,year){
 function buildQ(){
   if(selectedMode==='listening'){
     const yrs=selectedYears.includes('all')?null:selectedYears;
+    // Shuffle at the TRACK level (not the question level - questions within a track must
+    // stay grouped so the audio player doesn't jump between recordings) and cap to a small
+    // number of tracks per round, same "don't dump the whole pool in one go" reasoning as
+    // ROUND_SIZE for the other modes. A no-op when fewer tracks are available than the cap.
+    const tracks=shuf(MERGED_LISTENING.filter(l=>!yrs||yrs.includes(l.year))).slice(0,LISTENING_ROUND_TRACKS);
     const res=[];
-    // Not shuffled — questions from the same passage must stay grouped so the audio
-    // player (which persists across Next/Prev) doesn't jump between recordings.
-    MERGED_LISTENING.filter(l=>!yrs||yrs.includes(l.year)).forEach(l=>{
+    tracks.forEach(l=>{
       l.questions.forEach(q=>res.push({year:l.year,section:'Listening',passage:'',audioUrl:l.audioUrl,...q}));
     });
     return res;
