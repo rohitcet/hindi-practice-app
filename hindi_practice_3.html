@@ -469,11 +469,11 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
       <h2 class="hindi">&#2309;&#2349;&#2381;&#2351;&#2366;&#2360; &#2325;&#2352;&#2375;&#2306;, &#2310;&#2327;&#2375; &#2348;&#2397;&#2375;&#2306;!</h2>
       <p>Practice makes perfect &middot; PSLE Hindi preparation</p>
       <div class="hero-stats">
-        <div class="hero-stat"><div class="n" id="heroStatQuestions">&hellip;</div><div class="l">Questions</div></div>
+        <div class="hero-stat"><div class="n">500+</div><div class="l">Questions</div></div>
         <div class="hero-stat-div"></div>
         <div class="hero-stat"><div class="n" id="heroStatCollections">&hellip;</div><div class="l">Collections</div></div>
         <div class="hero-stat-div"></div>
-        <div class="hero-stat"><div class="n">5</div><div class="l">Sections</div></div>
+        <div class="hero-stat"><div class="n">8</div><div class="l">Sections</div></div>
       </div>
     </div>
     <p class="section-title">Choose mode</p>
@@ -1030,9 +1030,6 @@ function renderCollectionPills(){
   grid.innerHTML = '<button class="year-btn active" onclick="toggleYear(this,\'all\')">All</button>' + extra;
 }
 function updateHeroStats(){
-  let qCount = 0;
-  Object.values(MERGED_DB).forEach(sections => Object.values(sections).forEach(s => qCount += s.questions.length));
-  document.getElementById('heroStatQuestions').textContent = qCount + '+';
   document.getElementById('heroStatCollections').textContent = COLLECTION_ORDER.length;
 }
 
