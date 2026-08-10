@@ -10,6 +10,7 @@ import base64
 import os
 import json
 import posixpath
+import time
 import traceback
 import urllib.parse
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -344,7 +345,15 @@ toolkit. Consistent practice is what moves the needle, and that's exactly what u
 <p>Warm regards,<br>The Hindi Practice PSLE Team</p>
 """
 
+_zoho_token_cache = {"access_token": None, "expires_at": 0}
+
+
 def _get_zoho_access_token():
+    # Zoho access tokens are valid ~1hr; without caching, a bulk campaign send was calling
+    # this once per recipient in a tight loop and hitting Zoho's OAuth refresh-token rate
+    # limit partway through (observed: first 9 of 19 sends succeeded, the rest 400'd).
+    if _zoho_token_cache["access_token"] and time.time() < _zoho_token_cache["expires_at"]:
+        return _zoho_token_cache["access_token"]
     resp = requests.post(
         "https://accounts.zoho.com/oauth/v2/token",
         data={
@@ -356,7 +365,10 @@ def _get_zoho_access_token():
         timeout=10,
     )
     resp.raise_for_status()
-    return resp.json()["access_token"]
+    data = resp.json()
+    _zoho_token_cache["access_token"] = data["access_token"]
+    _zoho_token_cache["expires_at"] = time.time() + data.get("expires_in", 3600) - 60
+    return _zoho_token_cache["access_token"]
 
 
 def send_welcome_email(to_email, name):
