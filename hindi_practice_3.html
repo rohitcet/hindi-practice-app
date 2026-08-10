@@ -381,7 +381,7 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
         <use href="#sgstar" x="23" y="15"/>
         <use href="#sgstar" x="21.2" y="9.5"/>
       </svg>
-      National Day special: full free access for everyone until 9 August!
+      National Day special: full free access for everyone until 31 August!
       </span>
     </div>
     <button class="btn-google" onclick="signInWithGoogle()">
@@ -476,7 +476,7 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
         <use href="#sgstar" x="21.2" y="9.5"/>
       </svg>
       <div class="banner-content">
-        <p>Happy 61st National Day, Singapore! Full free access for everyone until 9 August &mdash; no trial limit, no subscription needed.</p>
+        <p>Happy 61st National Day, Singapore! Full free access for everyone until 31 August &mdash; no trial limit, no subscription needed.</p>
         <span class="countdown-badge">
           <svg width="16" height="11" viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg" style="border-radius:1px;border:1px solid rgba(255,255,255,0.85)" aria-hidden="true">
             <rect width="60" height="20" fill="#EF3340"/>
@@ -1580,7 +1580,7 @@ function isNative() {
 }
 const TRIAL_MS = 50 * 60 * 1000; // 50 minute free trial
 const TEST_USER_EMAILS = ['rohit.cet@gmail.com', 'ektachoubey@gmail.com']; // never subject to the trial window
-const NATIONAL_DAY_PROMO_END = new Date('2026-08-10T00:00:00+08:00').getTime(); // through end of 9 Aug, SGT
+const NATIONAL_DAY_PROMO_END = new Date('2026-09-01T00:00:00+08:00').getTime(); // through end of 31 Aug, SGT
 function isNationalDayPromoActive(){
   return Date.now() < NATIONAL_DAY_PROMO_END;
 }
