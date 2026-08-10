@@ -389,8 +389,10 @@ NATIONAL_DAY_EMAIL_HTML = """\
 </div>
 <p>Hi {name},</p>
 <p>Happy 61st National Day, Singapore!</p>
-<p>To celebrate, <b>Hindi Practice PSLE is completely free for everyone until 9 August</b> &mdash; no trial limit,
-no subscription needed. Every section, every collection, unlocked.</p>
+<p>&#128276; <b>PSLE Hindi oral exams are this week</b> &mdash; if you haven't had a chance to practice describing
+picture prompts aloud yet, please use the app and practice more before exam day.</p>
+<p>To celebrate National Day, <b>Hindi Practice PSLE is completely free for everyone until 31 August</b> &mdash; no trial
+limit, no subscription needed. Every section, every collection, unlocked.</p>
 <p>This is a great window to actually put the app through its paces:</p>
 <ul>
 <li>&#128218; <b>All 14 practice collections</b> &mdash; Language Use, Cloze Comprehension, Comprehension, and Vocabulary</li>
@@ -403,8 +405,10 @@ completely free.</p>
 <div style="text-align:center;margin:24px 0">
 <a href="https://hindipractice.hikagroup.co/" style="background:#000080;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700;display:inline-block">Start Practicing Now &rarr;</a>
 </div>
-<p>After 9 August, regular access is <b>$11/month</b>, but there's no pressure &mdash; enjoy the free week, and if
+<p>After 31 August, regular access is <b>$11/month</b>, but there's no pressure &mdash; enjoy the free access, and if
 it's been genuinely useful for your PSLE prep, subscribing keeps that consistent practice going.</p>
+<p>Know other parents whose kids are prepping for PSLE Hindi? Please share Hindi Practice PSLE with them too
+&mdash; free access until 31 August helps their family as much as it helps yours.</p>
 <p>Happy National Day, and good luck with your PSLE prep!</p>
 <p>Warm regards,<br>The Hindi Practice PSLE Team</p>
 """
@@ -725,7 +729,7 @@ class ProxyHandler(BaseHTTPRequestHandler):
         if campaign != "national_day":
             self._json_response(400, {"error": f"Unknown campaign '{campaign}'"})
             return
-        subject = "Happy National Day! Free full access on us, until 9 August"
+        subject = "Hindi orals are this week — practice now, free access until 31 August"
         html = NATIONAL_DAY_EMAIL_HTML
 
         resp = requests.get(
