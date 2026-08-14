@@ -388,6 +388,12 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
       <img src="https://www.google.com/favicon.ico" width="18" height="18">Sign in with Google</button>
     <div class="login-divider">or</div>
     <button class="admin-link" onclick="showAdminModal()">Admin login &#8594;</button>
+    <div id="playStoreBadgeRow" style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Prefer the app?</p>
+      <a href="https://play.google.com/store/apps/details?id=com.hindipracticepsle.app" target="_blank" rel="noopener">
+        <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" style="height:48px">
+      </a>
+    </div>
   </div>
 </div>
 
@@ -2280,6 +2286,8 @@ document.addEventListener('DOMContentLoaded', async function() {
   document.getElementById('homeScreen').style.display = 'none';
   updateLoginScreenPromoCopy();
   document.getElementById('loginScreen').style.display = 'flex';
+  // Pointless to prompt an install of the app from inside the app itself
+  if (isNative()) document.getElementById('playStoreBadgeRow').style.display = 'none';
 
   // Kick off in parallel with everything else — awaited later, right before the home
   // screen is actually shown, so pills/stats are always correct before a quiz can start.
