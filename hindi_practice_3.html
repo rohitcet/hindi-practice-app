@@ -536,6 +536,11 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
       <button class="year-btn active" onclick="toggleYear(this,'all')">All</button>
     </div>
     <button class="btn-start" onclick="startQuiz()">Start Quiz &#8594;</button>
+    <div style="text-align:center;margin-top:18px">
+      <a href="https://play.google.com/store/apps/details?id=com.hindipracticepsle.app" target="_blank" rel="noopener" id="homePlayStoreLink" style="font-size:12.5px;color:var(--muted);text-decoration:none">
+        &#128241; Also available on Google Play
+      </a>
+    </div>
   </div>
   <div id="quizScreen" style="display:none">
     <div class="progress-wrap">
@@ -2287,7 +2292,10 @@ document.addEventListener('DOMContentLoaded', async function() {
   updateLoginScreenPromoCopy();
   document.getElementById('loginScreen').style.display = 'flex';
   // Pointless to prompt an install of the app from inside the app itself
-  if (isNative()) document.getElementById('playStoreBadgeRow').style.display = 'none';
+  if (isNative()) {
+    document.getElementById('playStoreBadgeRow').style.display = 'none';
+    document.getElementById('homePlayStoreLink').style.display = 'none';
+  }
 
   // Kick off in parallel with everything else — awaited later, right before the home
   // screen is actually shown, so pills/stats are always correct before a quiz can start.
