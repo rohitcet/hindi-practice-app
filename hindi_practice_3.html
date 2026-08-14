@@ -203,6 +203,26 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
   .btn-secondary{padding:7px 9px}
   .btn-logout{padding:4px 7px;font-size:10px}
 }
+/* Same compact header rules, applied unconditionally in the native app regardless of what
+   width the WebView itself reports — some Android WebView builds/device text-scaling
+   settings don't trigger the max-width:480px query the same way a real mobile browser does,
+   causing the header to render as if it had full desktop width and overlap. The native app
+   is always phone-sized, so there's no correctness downside to applying this outside CSS's
+   own (apparently unreliable, in-WebView) viewport detection. body.native-app is set by JS
+   via isNative() at load. */
+body.native-app .header-title p{display:none}
+body.native-app .user-name{display:none}
+body.native-app #leaderboardBtnLabel,body.native-app #homeBtnLabel{display:none}
+body.native-app .user-bar{gap:6px}
+body.native-app .header-inner{gap:6px;padding:10px 12px}
+body.native-app .header-icon{width:28px;height:28px}
+body.native-app .btn-home{padding:7px 9px}
+body.native-app .score-pill{gap:5px}
+body.native-app .score-item .lbl{display:none}
+body.native-app .btn-secondary{padding:7px 9px}
+body.native-app .btn-logout{padding:4px 7px;font-size:10px}
+body.native-app .header-title{min-width:0}
+body.native-app .header-title h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .trial-banner{display:none;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--saffron-light);border:1px solid #FFD166;border-radius:12px;padding:14px 18px;margin-bottom:20px;}
 .national-day-banner{display:flex;align-items:center;gap:14px;background:#EF3340;border:1px solid #C8102E;border-radius:12px;padding:14px 18px;margin-bottom:20px;}
 .national-day-banner .flag-icon{flex-shrink:0;}
@@ -328,6 +348,14 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
 <body>
+<script>
+// Set as early as possible (before the header below even renders) so there's no flash of
+// the wrong layout — see the body.native-app CSS rules for why this doesn't rely on the
+// max-width:480px media query alone.
+if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
+  document.body.classList.add('native-app');
+}
+</script>
 <header>
   <div class="header-inner">
     <img class="header-icon" src="/images/icon_logo.jpg" alt="Hindi Practice">
@@ -512,6 +540,9 @@ main{max-width:900px;margin:0 auto;padding:24px 20px 80px;}
         <div class="hero-stat"><div class="n" id="heroStatCollections">&hellip;</div><div class="l">Collections</div></div>
         <div class="hero-stat-div"></div>
         <div class="hero-stat"><div class="n">8</div><div class="l">Sections</div></div>
+      </div>
+      <div style="margin-top:20px;display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);border-radius:999px;padding:7px 18px;font-size:12.5px;font-weight:600;color:#FFD166">
+        &#127942; The largest PSLE Hindi collection — real past papers from 2012 to 2025
       </div>
     </div>
     <p class="section-title" style="display:flex;align-items:center;justify-content:space-between">Choose mode
