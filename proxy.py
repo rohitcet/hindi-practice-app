@@ -397,10 +397,11 @@ def send_welcome_email(to_email, name):
 
 NATIONAL_DAY_EMAIL_HTML = """\
 <p>Hi {name},</p>
-<p>&#127942; We've been really encouraged by the participation and interest on the leaderboard lately &mdash; so
-we've decided to keep it going and keep <b>Hindi Practice PSLE completely free for everyone until 30 September</b>,
-so every student can stay competitive right through to the end of this year's PSLE. No trial limit, no
-subscription needed &mdash; every section, every collection, unlocked.</p>
+<p>&#127942; <b>PSLE Prep offer:</b> we've been really encouraged by the participation and interest on the
+leaderboard lately &mdash; so we've decided to keep it going and keep <b>Hindi Practice PSLE completely free for
+everyone until 30 September</b>, so every student can stay competitive right through to the end of this year's
+PSLE. No trial limit, no subscription needed &mdash; every section, every collection, unlocked.</p>
+<p>Best of luck for your Listening exam on <b>15 September</b>, and for the main exam that follows!</p>
 <p>This is a great window to put the app through its paces:</p>
 <ul>
 <li>&#128218; <b>All 14 practice collections</b> &mdash; Language Use, Cloze Comprehension, Comprehension, and Vocabulary</li>
@@ -736,7 +737,7 @@ class ProxyHandler(BaseHTTPRequestHandler):
         if campaign != "national_day":
             self._json_response(400, {"error": f"Unknown campaign '{campaign}'"})
             return
-        subject = "Leaderboard stays live — free access extended to 30 September"
+        subject = "PSLE Prep offer — free access extended to 30 September"
         html = NATIONAL_DAY_EMAIL_HTML
 
         resp = requests.get(
