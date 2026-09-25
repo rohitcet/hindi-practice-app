@@ -397,27 +397,24 @@ def send_welcome_email(to_email, name):
 
 NATIONAL_DAY_EMAIL_HTML = """\
 <p>Hi {name},</p>
-<p>&#127942; <b>PSLE Prep offer:</b> we've been really encouraged by the participation and interest on the
-leaderboard lately &mdash; so we've decided to keep it going and keep <b>Hindi Practice PSLE completely free for
-everyone until 30 September</b>, so every student can stay competitive right through to the end of this year's
-PSLE. No trial limit, no subscription needed &mdash; every section, every collection, unlocked.</p>
-<p>Best of luck for your Listening exam on <b>15 September</b>, and for the main exam that follows!</p>
-<p>This is a great window to put the app through its paces:</p>
+<p>&#127808; <b>Monday is exam day</b> &mdash; all the very best for your Hindi paper! You've put in the practice,
+so trust what you've learned, stay calm, and give it your best.</p>
+<p>&#128218; Over the last couple of days we've added new question sets to the app, written to be even more
+relevant to the actual PSLE exam pattern &mdash; if you haven't had a chance yet, a quick last practice round
+before Monday could help.</p>
+<p>A few quick reminders before exam day:</p>
 <ul>
-<li>&#128218; <b>All 14 practice collections</b> &mdash; Language Use, Cloze Comprehension, Comprehension, and Vocabulary</li>
-<li>&#127908; <b>Oral Practice</b> &mdash; describe picture prompts aloud, just like the real PSLE oral exam</li>
-<li>&#127919; <b>Practice Set</b> &mdash; a full timed mock combining every section, exactly like exam day</li>
-<li>&#128203; <b>Review Mistakes</b> &mdash; see exactly what went wrong and why, right after every session</li>
+<li>&#128564; Get a good night's sleep the night before</li>
+<li>&#128221; Read each question carefully before answering</li>
+<li>&#9200; Pace yourself across sections &mdash; don't get stuck on any one question</li>
 </ul>
-<p>Jump back in, climb the leaderboard, and keep that streak alive all the way to PSLE.</p>
+<p>One more thing &mdash; if Hindi Practice PSLE has helped with your preparation, please don't forget to
+<b>share it with friends and family</b>. A quick mention to another parent or student who's preparing too
+goes a long way &mdash; it helped your family, and it can help theirs.</p>
 <div style="text-align:center;margin:24px 0">
-<a href="https://hindipractice.hikagroup.co/" style="background:#000080;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700;display:inline-block">Start Practicing Now &rarr;</a>
+<a href="https://hindipractice.hikagroup.co/" style="background:#000080;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700;display:inline-block">Open Hindi Practice PSLE &rarr;</a>
 </div>
-<p>After 30 September, regular access is <b>$11/month</b>, but there's no pressure &mdash; enjoy the free access, and if
-it's been genuinely useful for your PSLE prep, subscribing keeps that consistent practice going.</p>
-<p>Know other parents whose kids are prepping for PSLE Hindi? Please share Hindi Practice PSLE with them too
-&mdash; free access until 30 September helps their family as much as it helps yours.</p>
-<p>Good luck with your PSLE prep!</p>
+<p>Wishing you calm nerves and a great exam on Monday!</p>
 <p>Warm regards,<br>The Hindi Practice PSLE Team</p>
 """
 
@@ -737,7 +734,7 @@ class ProxyHandler(BaseHTTPRequestHandler):
         if campaign != "national_day":
             self._json_response(400, {"error": f"Unknown campaign '{campaign}'"})
             return
-        subject = "PSLE Prep offer — free access extended to 30 September"
+        subject = "All the best for Monday's Hindi exam!"
         html = NATIONAL_DAY_EMAIL_HTML
 
         resp = requests.get(
