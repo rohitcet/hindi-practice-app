@@ -393,25 +393,21 @@ def send_welcome_email(to_email, name):
 
 NATIONAL_DAY_EMAIL_HTML = """\
 <p>Hi {name},</p>
-<p>&#127808; <b>Monday is exam day</b> &mdash; all the very best for your Hindi paper! You've put in the practice,
-so trust what you've learned, stay calm, and give it your best.</p>
-<p>&#128218; Over the last couple of days we've added new question sets to the app, written to be even more
-relevant to the actual PSLE exam pattern &mdash; if you haven't had a chance yet, a quick last practice round
-before Monday could help.</p>
-<p>A few quick reminders before exam day:</p>
+<p>&#127808; With PSLE behind you, <b>all the very best for your Secondary 1 posting!</b> We hope you get the school
+you're hoping for &mdash; and wherever you go, be proud of the effort you've put in.</p>
+<p><b>Hindi Practice PSLE is free.</b> If it has helped your family, please <b>share it with friends and family</b>
+so they can take advantage of it too, especially anyone with a child preparing for PSLE Hindi.</p>
+<p>Just forward this email, or send them these links:</p>
 <ul>
-<li>&#128564; Get a good night's sleep the night before</li>
-<li>&#128221; Read each question carefully before answering</li>
-<li>&#9200; Pace yourself across sections &mdash; don't get stuck on any one question</li>
+<li>&#127760; Website: <a href="https://hindipractice.hikagroup.co/">hindipractice.hikagroup.co</a></li>
+<li>&#128241; Android app: <a href="https://play.google.com/store/apps/details?id=com.hindipracticepsle.app">Get it on Google Play</a></li>
 </ul>
-<p>One more thing &mdash; if Hindi Practice PSLE has helped with your preparation, please don't forget to
-<b>share it with friends and family</b>. A quick mention to another parent or student who's preparing too
-goes a long way &mdash; it helped your family, and it can help theirs.</p>
 <div style="text-align:center;margin:24px 0">
 <a href="https://hindipractice.hikagroup.co/" style="background:#000080;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700;display:inline-block">Open Hindi Practice PSLE &rarr;</a>
 </div>
-<p>Wishing you calm nerves and a great exam on Monday!</p>
+<p>Wishing you an exciting start to secondary school!</p>
 <p>Warm regards,<br>The Hindi Practice PSLE Team</p>
+<p style="font-size:12px;color:#888">If you'd prefer not to receive these emails, just reply with "unsubscribe".</p>
 """
 
 
@@ -730,7 +726,7 @@ class ProxyHandler(BaseHTTPRequestHandler):
         if campaign != "national_day":
             self._json_response(400, {"error": f"Unknown campaign '{campaign}'"})
             return
-        subject = "All the best for Monday's Hindi exam!"
+        subject = "All the best for your S1 posting!"
         html = NATIONAL_DAY_EMAIL_HTML
 
         resp = requests.get(
@@ -750,6 +746,7 @@ class ProxyHandler(BaseHTTPRequestHandler):
         if dry_run:
             self._json_response(200, {
                 "dry_run": True,
+                "subject": subject,
                 "total": len(recipients),
                 "recipients": [r["email"] for r in recipients],
             })
