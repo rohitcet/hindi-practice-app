@@ -392,6 +392,7 @@ if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.is
     <h2>&#2361;&#2367;&#2306;&#2342;&#2368; &#2309;&#2349;&#2381;&#2351;&#2366;&#2360;</h2>
     <div class="pricing-list">
       &#9989; Sign in free with Google<br>
+      <span id="loginFreeLine" style="display:none">&#9989; Full free access &mdash; no subscription needed</span>
       <span id="loginTrialLine">
       &#9989; 50 minutes full access &mdash; no card needed<br>
       &#9989; Then subscribe for <strong id="loginPriceText">&hellip;</strong>
@@ -1703,13 +1704,18 @@ const NATIONAL_DAY_PROMO_END = new Date('2026-10-01T00:00:00+08:00').getTime(); 
 function isNationalDayPromoActive(){
   return Date.now() < NATIONAL_DAY_PROMO_END;
 }
+// Master switch for the trial window + paywall. false = free for everyone; set to true to restore.
+const SUBSCRIPTION_BLOCK_ENABLED = false;
 function hasUnlimitedAccess(profile){
+  if (!SUBSCRIPTION_BLOCK_ENABLED) return true;
   if (isNationalDayPromoActive()) return true; // National Day promo — free access for everyone
   return !!profile && (profile.is_subscribed || TEST_USER_EMAILS.includes(currentUser && currentUser.email));
 }
 function updateLoginScreenPromoCopy(){
-  const promoActive = isNationalDayPromoActive();
-  document.getElementById('loginTrialLine').style.display = promoActive ? 'none' : '';
+  const free = !SUBSCRIPTION_BLOCK_ENABLED;
+  const promoActive = !free && isNationalDayPromoActive();
+  document.getElementById('loginFreeLine').style.display = free ? '' : 'none';
+  document.getElementById('loginTrialLine').style.display = (free || promoActive) ? 'none' : '';
   document.getElementById('loginPromoLine').style.display = promoActive ? '' : 'none';
 }
 
@@ -1936,7 +1942,8 @@ async function checkAccessAndShowScreen(retriesLeft) {
   const { data: profile } = await sb.from('profiles').select('trial_started_at,is_subscribed').eq('id', currentUser.id).single();
   currentProfile = profile;
   const unlimited = hasUnlimitedAccess(profile);
-  const hasAccess = !!profile && (unlimited || (Date.now() - new Date(profile.trial_started_at).getTime()) < TRIAL_MS);
+  const hasAccess = !SUBSCRIPTION_BLOCK_ENABLED
+    || (!!profile && (unlimited || (Date.now() - new Date(profile.trial_started_at).getTime()) < TRIAL_MS));
 
   if (hasAccess) {
     if (collectionsLoadedPromise) await collectionsLoadedPromise;

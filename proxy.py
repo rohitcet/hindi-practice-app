@@ -321,9 +321,8 @@ def _upload_audio(collection_key, audio):
 
 WELCOME_EMAIL_HTML = """\
 <p>Hi {name},</p>
-<p>Welcome to <b>Hindi Practice PSLE</b>! You've got <b>50 minutes of full free access</b> starting now &mdash;
-enough time to see exactly how this can help with PSLE Hindi prep.</p>
-<p>Here's everything unlocked during your trial:</p>
+<p>Welcome to <b>Hindi Practice PSLE</b>! <b>Full access is currently free</b> &mdash; no subscription needed.</p>
+<p>Here's everything unlocked for you:</p>
 <ul>
 <li>&#128218; <b>300+ practice questions</b> across all 14 collections &mdash; Language Use, Cloze Comprehension,
 Comprehension, and Vocabulary</li>
@@ -331,15 +330,12 @@ Comprehension, and Vocabulary</li>
 <li>&#127919; <b>Practice Set</b> &mdash; a timed, randomized mock combining every section, just like exam day</li>
 <li>&#128203; <b>Review Mistakes</b> &mdash; instantly see what went wrong and why, so every minute of practice counts</li>
 </ul>
-<p><b>Best way to spend your 50 minutes</b>: try <b>Practice Set</b> first &mdash; it's the closest thing to a real
+<p><b>Best place to start</b>: try <b>Practice Set</b> first &mdash; it's the closest thing to a real
 PSLE mock exam, and will show you exactly where extra practice pays off most.</p>
 <div style="text-align:center;margin:24px 0">
 <a href="https://hindipractice.hikagroup.co/" style="background:#000080;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700;display:inline-block">Continue Practicing &rarr;</a>
 </div>
-<p>When your trial ends, continuing is <b>$11/month</b> &mdash; less than $0.40 a day for unlimited practice across
-every section, with new content added regularly. Cancel anytime, no long-term commitment, no risk in trying it out.</p>
-<p>PSLE prep gets expensive fast &mdash; this is designed to be the affordable, always-available part of that
-toolkit. Consistent practice is what moves the needle, and that's exactly what unlimited access gives you.</p>
+<p>Consistent practice is what moves the needle, so come back often and keep your streak going on the leaderboard.</p>
 <p>Questions or feedback? Just reply &mdash; I read every message.</p>
 <p>Good luck with your PSLE prep!</p>
 <p>Warm regards,<br>The Hindi Practice PSLE Team</p>
